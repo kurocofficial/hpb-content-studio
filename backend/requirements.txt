@@ -1,0 +1,38 @@
+# FastAPI
+fastapi==0.109.2
+
+# Database
+sqlalchemy==2.0.25
+uvicorn[standard]==0.27.1
+python-multipart==0.0.9
+
+# Supabase
+supabase==2.3.4
+
+# Gemini AI
+google-generativeai==0.4.1
+
+# Environment & Config
+python-dotenv==1.0.1
+pydantic==2.6.1
+pydantic-settings==2.2.1
+
+# HTTP Client
+httpx>=0.24.0,<0.26.0
+
+# Utilities
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# CLI
+click==8.1.7
+
+# Testing
+pytest==8.0.1
+pytest-asyncio==0.23.5
+
+# Stripe
+stripe==8.4.0
+
+# Sentry (Production)
+# sentry-sdk[fastapi]==1.40.0

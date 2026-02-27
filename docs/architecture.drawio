@@ -1,0 +1,376 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="24.7.0">
+  <diagram id="hpb-architecture" name="HPB Content Studio Architecture">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ========== TITLE ========== -->
+        <mxCell id="title" value="HPB Content Studio &amp;mdash; System Architecture" style="text;html=1;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="300" y="-80" width="600" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Phase 1 MVP + Team Plan" style="text;html=1;fontSize=14;align=center;verticalAlign=middle;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="400" y="-35" width="400" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ========== USER ========== -->
+        <mxCell id="user" value="&lt;b&gt;User&lt;/b&gt;&lt;br&gt;(Salon Staff)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="10" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ========== FRONTEND LAYER ========== -->
+        <mxCell id="fe-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#0288d1;strokeWidth=2;dashed=0;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="110" width="1080" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="fe-label" value="&lt;b&gt;Frontend&lt;/b&gt;&amp;nbsp;&amp;nbsp;React 18 + TypeScript + Vite + TailwindCSS + shadcn/ui" style="text;html=1;fontSize=14;align=left;verticalAlign=middle;fontColor=#0277bd;" vertex="1" parent="1">
+          <mxGeometry x="80" y="115" width="550" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="fe-host" value="Vercel" style="text;html=1;fontSize=11;align=right;verticalAlign=middle;fontColor=#999999;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="980" y="115" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Pages -->
+        <mxCell id="pages-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#90caf9;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="155" width="520" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="pages-label" value="&lt;b&gt;Pages&lt;/b&gt;" style="text;html=1;fontSize=12;align=left;verticalAlign=middle;fontColor=#1565c0;" vertex="1" parent="1">
+          <mxGeometry x="90" y="157" width="100" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pg-landing" value="LandingPage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#64b5f6;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="95" y="188" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-login" value="Login / Signup" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#64b5f6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="215" y="188" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-dashboard" value="Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#64b5f6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="335" y="188" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-salon" value="SalonSetup" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#64b5f6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="455" y="188" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-stylist" value="StylistList / Form" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#64b5f6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="95" y="230" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-generate" value="&lt;b&gt;GeneratePage&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90caf9;strokeColor=#42a5f5;fontSize=10;fontColor=#0d47a1;" vertex="1" parent="1">
+          <mxGeometry x="215" y="230" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-chat" value="&lt;b&gt;ChatPage&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#90caf9;strokeColor=#42a5f5;fontSize=10;fontColor=#0d47a1;" vertex="1" parent="1">
+          <mxGeometry x="335" y="230" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-history" value="HistoryPage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#64b5f6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="455" y="230" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-csv" value="CsvImportPage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="95" y="272" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-team" value="TeamSalonList" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="215" y="272" width="110" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="pg-members" value="OrgMembers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="335" y="272" width="110" height="32" as="geometry" />
+        </mxCell>
+
+        <!-- Team label -->
+        <mxCell id="team-badge" value="Team" style="text;html=1;fontSize=9;align=center;fontColor=#2e7d32;fontStyle=3;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="455" y="275" width="40" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Preview Components -->
+        <mxCell id="preview-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#90caf9;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="95" y="312" width="480" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="comp-copy" value="CopyButton" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#90caf9;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="105" y="316" width="90" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="comp-char" value="CharCounter (HPB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#90caf9;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="205" y="316" width="120" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="comp-result" value="ResultView" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#90caf9;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="335" y="316" width="90" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="comp-selector" value="SalonSelector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#81c784;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="435" y="316" width="100" height="26" as="geometry" />
+        </mxCell>
+
+        <!-- State Management -->
+        <mxCell id="store-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ffb74d;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="620" y="155" width="500" height="95" as="geometry" />
+        </mxCell>
+        <mxCell id="store-label" value="&lt;b&gt;Zustand Stores&lt;/b&gt;" style="text;html=1;fontSize=12;align=left;verticalAlign=middle;fontColor=#e65100;" vertex="1" parent="1">
+          <mxGeometry x="630" y="157" width="150" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="st-auth" value="authStore&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;user / plan / org&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ffa726;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="635" y="188" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="st-gen" value="generateStore&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;content / stream&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ffa726;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="755" y="188" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="st-salon" value="salonStore&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;multi-salon&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#ffa726;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="875" y="188" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="st-org" value="orgStore&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;team / members&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#81c784;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="995" y="188" width="110" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- API Client -->
+        <mxCell id="api-client" value="&lt;b&gt;API Client&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;lib/api.ts&lt;br&gt;Bearer Token + SSE Stream&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#29b6f6;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="620" y="270" width="230" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="supabase-client" value="&lt;b&gt;Supabase Client&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;lib/supabase.ts&lt;br&gt;Auth + Session&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#29b6f6;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="870" y="270" width="230" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ========== ARROWS: User -> Frontend ========== -->
+        <mxCell id="arrow-user-fe" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=#666666;strokeWidth=2;" edge="1" source="user" target="fe-group" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-user-label" value="Browser" style="edgeLabel;html=1;fontSize=10;fontColor=#999999;" vertex="1" connectable="0" parent="arrow-user-fe">
+          <mxGeometry x="-0.2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ========== BACKEND LAYER ========== -->
+        <mxCell id="be-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#e91e63;strokeWidth=2;dashed=0;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="440" width="1080" height="310" as="geometry" />
+        </mxCell>
+        <mxCell id="be-label" value="&lt;b&gt;Backend&lt;/b&gt;&amp;nbsp;&amp;nbsp;Python FastAPI + SQLAlchemy + Pydantic" style="text;html=1;fontSize=14;align=left;verticalAlign=middle;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="80" y="445" width="500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="be-host" value="Railway / Render" style="text;html=1;fontSize=11;align=right;verticalAlign=middle;fontColor=#999999;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="980" y="445" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Routers -->
+        <mxCell id="router-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ef9a9a;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="485" width="400" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="router-label" value="&lt;b&gt;Routers&lt;/b&gt; (API Endpoints)" style="text;html=1;fontSize=12;align=left;verticalAlign=middle;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="90" y="487" width="200" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rt-auth" value="/auth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="95" y="517" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="rt-salons" value="/salons" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="185" y="517" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="rt-stylists" value="/stylists" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="275" y="517" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="rt-generate" value="&lt;b&gt;/generate&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ef9a9a;strokeColor=#e53935;fontSize=10;fontColor=#b71c1c;" vertex="1" parent="1">
+          <mxGeometry x="365" y="517" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="rt-chat" value="/chat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="95" y="555" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="rt-contents" value="/contents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="185" y="555" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="rt-usage" value="/usage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="275" y="555" width="80" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="rt-org" value="/organizations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="365" y="555" width="100" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Services -->
+        <mxCell id="svc-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ef9a9a;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="510" y="485" width="340" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-label" value="&lt;b&gt;Services&lt;/b&gt; (Business Logic)" style="text;html=1;fontSize=12;align=left;verticalAlign=middle;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="520" y="487" width="220" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="svc-prompt" value="&lt;b&gt;prompt_engine&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;build_system_prompt&lt;br&gt;build_full_prompt&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="525" y="517" width="145" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-content" value="&lt;b&gt;content_service&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;generate_stream&lt;br&gt;save_content&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="685" y="517" width="145" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-usage" value="&lt;b&gt;usage_service&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;check_limit&lt;br&gt;increment&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="525" y="580" width="145" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-csv" value="&lt;b&gt;csv_import_service&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;parse_csv&lt;br&gt;bulk_insert&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="685" y="580" width="145" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- Gemini Service -->
+        <mxCell id="svc-gemini" value="&lt;b&gt;gemini_service&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;generate_content_stream&lt;br&gt;Gemini 2.0 Flash&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fdd835;fontSize=10;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="880" y="517" width="155" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- Utils -->
+        <mxCell id="utils-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ef9a9a;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="880" y="585" width="250" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="utils-label" value="&lt;b&gt;Utils&lt;/b&gt;" style="text;html=1;fontSize=11;align=left;verticalAlign=middle;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="890" y="585" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="util-char" value="char_counter&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;HPB&#x5168;&#x89D2;&#x30AB;&#x30A6;&#x30F3;&#x30C8;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffca28;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="893" y="608" width="105" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="util-hpb" value="hpb_constraints&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;&#x7981;&#x6B62;&#x8868;&#x73FE; / &#x6587;&#x5B57;&#x6570;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffca28;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="608" width="110" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Models -->
+        <mxCell id="model-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ef9a9a;strokeWidth=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="615" width="400" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="model-label" value="&lt;b&gt;Models&lt;/b&gt; (SQLAlchemy ORM)" style="text;html=1;fontSize=11;align=left;verticalAlign=middle;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="90" y="617" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="m-salon" value="Salon" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#ef9a9a;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="93" y="640" width="55" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m-stylist" value="Stylist" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#ef9a9a;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="155" y="640" width="55" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m-content" value="Content" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#ef9a9a;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="217" y="640" width="55" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m-chat" value="Chat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#ef9a9a;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="279" y="640" width="55" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m-usage" value="Usage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#ef9a9a;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="341" y="640" width="55" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="m-org" value="Org" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#81c784;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="403" y="640" width="55" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- ========== ARROWS: Frontend -> Backend ========== -->
+        <mxCell id="arrow-api" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.35;entryY=0;entryDx=0;entryDy=0;strokeColor=#e91e63;strokeWidth=2;startArrow=classic;startFill=1;" edge="1" source="api-client" target="be-group" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-api-label" value="REST API + SSE&lt;br&gt;/api/v1/*" style="edgeLabel;html=1;fontSize=10;fontColor=#e91e63;fontStyle=1;" vertex="1" connectable="0" parent="arrow-api">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ========== EXTERNAL SERVICES ========== -->
+
+        <!-- Supabase -->
+        <mxCell id="ext-supabase" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#43a047;strokeWidth=2;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="120" width="220" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-supabase-label" value="&lt;b&gt;Supabase&lt;/b&gt;" style="text;html=1;fontSize=14;align=center;verticalAlign=middle;fontColor=#2e7d32;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="125" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="supa-auth" value="&lt;b&gt;Auth&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;Email + Password&lt;br&gt;JWT Session&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1235" y="160" width="90" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="supa-pg" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;8 Tables&lt;br&gt;RLS (Row Level Security)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1335" y="160" width="90" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="supa-storage" value="&lt;b&gt;Storage&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;&#x753B;&#x50CF;&#x30D5;&#x30A1;&#x30A4;&#x30EB;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1235" y="225" width="90" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="supa-rls" value="&lt;b&gt;RLS&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;&#x30DE;&#x30EB;&#x30C1;&#x30C6;&#x30CA;&#x30F3;&#x30C8;&#x5206;&#x96E2;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1335" y="225" width="90" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="supa-dev" value="Dev: SQLite" style="text;html=1;fontSize=9;align=center;verticalAlign=middle;fontColor=#999999;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="275" width="190" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Gemini AI -->
+        <mxCell id="ext-gemini" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#f9a825;strokeWidth=2;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="370" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-gemini-label" value="&lt;b&gt;Google Gemini&lt;/b&gt;" style="text;html=1;fontSize=14;align=center;verticalAlign=middle;fontColor=#f57f17;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="375" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="gemini-model" value="&lt;b&gt;Gemini 2.0 Flash&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;&#x30B9;&#x30C8;&#x30EA;&#x30FC;&#x30DF;&#x30F3;&#x30B0;&#x751F;&#x6210;&lt;br&gt;&#x65E5;&#x672C;&#x8A9E;&#x30C6;&#x30AD;&#x30B9;&#x30C8;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff59d;strokeColor=#fdd835;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1245" y="410" width="170" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Stripe (Phase 2) -->
+        <mxCell id="ext-stripe" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#7e57c2;strokeWidth=2;dashed=1;dashPattern=5 5;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="510" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-stripe-label" value="&lt;b&gt;Stripe&lt;/b&gt; &lt;font style=&quot;font-size:10px&quot;&gt;(Phase 2)&lt;/font&gt;" style="text;html=1;fontSize=14;align=center;verticalAlign=middle;fontColor=#5e35b1;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="515" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="stripe-checkout" value="Checkout + Billing Portal&lt;br&gt;&lt;font style=&quot;font-size:8px&quot;&gt;Free / Pro / Team &#x30D7;&#x30E9;&#x30F3;&lt;br&gt;Webhook &#x9023;&#x643A;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#9575cd;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1245" y="550" width="170" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Nanobanana (Phase 2) -->
+        <mxCell id="ext-nano" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#e91e63;strokeWidth=2;dashed=1;dashPattern=5 5;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="650" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-nano-label" value="&lt;b&gt;Nanobanana&lt;/b&gt; &lt;font style=&quot;font-size:10px&quot;&gt;(Phase 2)&lt;/font&gt;" style="text;html=1;fontSize=14;align=center;verticalAlign=middle;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="655" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="nano-img" value="AI&#x753B;&#x50CF;&#x751F;&#x6210;&lt;br&gt;&lt;font style=&quot;font-size:8px;color:#c62828&quot;&gt;&#x26A0; HPB&#x63B2;&#x8F09;&#x7981;&#x6B62; &amp;mdash; SNS&#x7528;&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8bbd0;strokeColor=#ec407a;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1245" y="690" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ========== ARROWS: to External Services ========== -->
+
+        <!-- Frontend -> Supabase Auth -->
+        <mxCell id="arrow-supa-auth" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#43a047;strokeWidth=1.5;" edge="1" source="supabase-client" target="supa-auth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-supa-auth-l" value="Auth" style="edgeLabel;html=1;fontSize=9;fontColor=#43a047;" vertex="1" connectable="0" parent="arrow-supa-auth">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Backend -> Supabase DB -->
+        <mxCell id="arrow-supa-db" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#43a047;strokeWidth=1.5;" edge="1" source="ext-supabase" target="supa-pg" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1200" y="550" />
+              <mxPoint x="1200" y="186" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Backend -> Gemini -->
+        <mxCell id="arrow-gemini" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#f9a825;strokeWidth=2;" edge="1" source="svc-gemini" target="ext-gemini" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-gemini-l" value="Stream" style="edgeLabel;html=1;fontSize=9;fontColor=#f9a825;fontStyle=1;" vertex="1" connectable="0" parent="arrow-gemini">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ========== DATA FLOW (core generation) ========== -->
+        <mxCell id="arrow-rt-svc" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;strokeColor=#e53935;strokeWidth=1.5;" edge="1" source="router-group" target="svc-group" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-svc-gemini" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#f9a825;strokeWidth=1.5;" edge="1" source="svc-content" target="svc-gemini" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ========== LEGEND ========== -->
+        <mxCell id="legend-group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#bdbdbd;strokeWidth=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="770" width="500" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;fontSize=11;align=left;verticalAlign=middle;fontColor=#424242;" vertex="1" parent="1">
+          <mxGeometry x="70" y="772" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-mvp" value="Phase 1 (MVP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcdd2;strokeColor=#ef5350;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="75" y="798" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-team" value="Team Plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#66bb6a;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="175" y="798" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-phase2" value="Phase 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#9575cd;fontSize=9;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="275" y="798" width="90" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg-core" value="Core Flow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff59d;strokeColor=#fdd835;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="375" y="798" width="90" height="25" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
