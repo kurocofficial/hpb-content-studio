@@ -1,0 +1,53 @@
+{
+  "targets": {
+    "lp_pv": 1500,
+    "free_registrations": 30,
+    "pro_conversions": 3,
+    "team_inquiries": 1,
+    "output_tokens": 1500000,
+    "api_cost_yen": 1200,
+    "blog_posts": 12,
+    "note_posts": 5,
+    "youtube_videos": 3
+  },
+  "monthly_targets": {
+    "2026-04": {
+      "lp_pv": 300,
+      "free_registrations": 5,
+      "pro_conversions": 0,
+      "output_tokens": 150000,
+      "api_cost_yen": 150
+    },
+    "2026-05": {
+      "lp_pv": 800,
+      "free_registrations": 15,
+      "pro_conversions": 1,
+      "output_tokens": 500000,
+      "api_cost_yen": 500
+    },
+    "2026-06": {
+      "lp_pv": 1500,
+      "free_registrations": 30,
+      "pro_conversions": 3,
+      "output_tokens": 1500000,
+      "api_cost_yen": 1200
+    }
+  },
+  "weekly_data": [
+    {
+      "week": "2026-W14",
+      "date_start": "2026-04-01",
+      "date_end": "2026-04-07",
+      "lp_pv": 0,
+      "free_registrations": 0,
+      "pro_conversions": 0,
+      "team_inquiries": 0,
+      "output_tokens": 0,
+      "api_cost_yen": 0,
+      "blog_posts": 0,
+      "note_posts": 0,
+      "youtube_videos": 0,
+      "notes": "テストマーケティング開始前"
+    }
+  ]
+}
