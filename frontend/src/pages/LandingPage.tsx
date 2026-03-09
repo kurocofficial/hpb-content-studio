@@ -22,6 +22,14 @@ import {
   Star,
 } from "lucide-react";
 
+// ─── Types ────────────────────────────────────────────
+interface StatsData {
+  weekly_signups: number;
+  total_tokens: number;
+  registered_salons: number;
+  last_updated: string;
+}
+
 // ─── Scroll Reveal Hook ───────────────────────────────
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -46,6 +54,114 @@ function useScrollReveal() {
   }, []);
 
   return ref;
+}
+
+// ─── Count Up Hook ────────────────────────────────────
+function useCountUp(target: number, duration: number, start: boolean) {
+  const [value, setValue] = useState(0);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (!start || hasAnimated.current || target === 0) return;
+    hasAnimated.current = true;
+
+    const startTime = performance.now();
+    function easeOutExpo(t: number) {
+      return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    }
+    function tick(now: number) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      setValue(Math.round(easeOutExpo(progress) * target));
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }, [target, duration, start]);
+
+  return value;
+}
+
+// ─── Stats Helpers ────────────────────────────────────
+function formatTokens(value: number): number {
+  return Math.round(value / 10000);
+}
+
+function formatDate(dateStr: string): string {
+  const parts = dateStr.split("-");
+  return `${parts[0]}年${parseInt(parts[1], 10)}月${parseInt(parts[2], 10)}日`;
+}
+
+// ─── Stats Bar Component ──────────────────────────────
+function StatsBar() {
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const [visible, setVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    fetch("/stats.json")
+      .then((res) => res.json())
+      .then((data: StatsData) => setStats(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, [stats]);
+
+  const signups = useCountUp(stats?.weekly_signups ?? 0, 2000, visible);
+  const tokens = useCountUp(formatTokens(stats?.total_tokens ?? 0), 2000, visible);
+  const salons = useCountUp(stats?.registered_salons ?? 0, 2000, visible);
+
+  if (!stats) return null;
+
+  const items = [
+    { emoji: "📈", value: signups, unit: "件", label: "今週の新規登録" },
+    { emoji: "🤖", value: tokens, unit: "万", label: "累計AI処理トークン" },
+    { emoji: "💈", value: salons, unit: "店舗", label: "登録サロン数" },
+  ];
+
+  return (
+    <section
+      ref={sectionRef}
+      className="bg-gradient-to-br from-[#FFFBF7] to-[#FFF5EE] py-16"
+    >
+      <div className="max-w-5xl mx-auto px-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          {items.map((item, i) => (
+            <div
+              key={i}
+              className={`sr sr-d${i + 1} flex flex-col items-center gap-1`}
+            >
+              <span className="text-2xl mb-1">{item.emoji}</span>
+              <div>
+                <span className="lp-serif text-[2.75rem] sm:text-[3.25rem] font-bold text-[#2C3E50] leading-none">
+                  {item.value.toLocaleString()}
+                </span>
+                <span className="text-base font-medium text-[#2C3E50] ml-0.5">
+                  {item.unit}
+                </span>
+              </div>
+              <span className="text-sm text-[#6B7B8D] mt-1">{item.label}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-center mt-6 text-xs text-[#6B7B8D]/60">
+          最終更新: {formatDate(stats.last_updated)}
+        </p>
+      </div>
+    </section>
+  );
 }
 
 // ─── FAQ Accordion Item ───────────────────────────────
@@ -647,6 +763,9 @@ export default function LandingPage() {
           </svg>
         </div>
       </section>
+
+      {/* ─── Stats Bar ─── */}
+      <StatsBar />
 
       {/* ─── Pain Points ─── */}
       <section className="relative bg-white py-24 sm:py-32">

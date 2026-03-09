@@ -475,6 +475,55 @@
     }
 
     /* ═══════════════════════════════════════════════════════
+       STATS BAR
+    ═══════════════════════════════════════════════════════ */
+    .stats-section {
+      background: linear-gradient(135deg, var(--cream) 0%, var(--cream-deep) 100%);
+      padding: 4rem 0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      text-align: center;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .stat-emoji {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .stat-number {
+      font-family: 'Shippori Mincho B1', 'Georgia', serif;
+      font-size: 2.75rem;
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.2;
+    }
+    .stat-unit {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--dark);
+      margin-left: 0.15em;
+    }
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+    .stats-updated {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    /* ═══════════════════════════════════════════════════════
        PAIN POINTS
     ═══════════════════════════════════════════════════════ */
     .pain-section {
@@ -1154,6 +1203,7 @@
       .cta-title { font-size: 2.6rem; }
       .cta-subtitle { font-size: 1.125rem; }
       .cta-buttons { flex-direction: row; }
+      .stat-number { font-size: 3.25rem; }
       .pain-section,
       .features-section,
       .steps-section,
@@ -1175,6 +1225,7 @@
       .nav-links { display: flex; }
       .mobile-menu-btn { display: none; }
       .mobile-menu { display: none !important; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
       .pain-grid { grid-template-columns: repeat(3, 1fr); }
       .steps-grid { grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
       .step-connector { display: block; }
@@ -1324,6 +1375,38 @@
       <svg viewBox="0 0 1440 60" fill="none" preserveAspectRatio="none">
         <path d="M0 20C240 45 480 55 720 40C960 25 1200 35 1440 20V61H0V20Z" fill="white"/>
       </svg>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       STATS BAR
+  ═══════════════════════════════════════════════════════ -->
+  <section class="stats-section" id="statsSection">
+    <div class="container-md">
+      <div class="stats-grid">
+        <div class="sr stat-item">
+          <span class="stat-emoji">📈</span>
+          <div>
+            <span class="stat-number" data-target="weekly_signups">--</span><span class="stat-unit">件</span>
+          </div>
+          <span class="stat-label">今週の新規登録</span>
+        </div>
+        <div class="sr sr-d1 stat-item">
+          <span class="stat-emoji">🤖</span>
+          <div>
+            <span class="stat-number" data-target="total_tokens">--</span><span class="stat-unit">万</span>
+          </div>
+          <span class="stat-label">累計AI処理トークン</span>
+        </div>
+        <div class="sr sr-d2 stat-item">
+          <span class="stat-emoji">💈</span>
+          <div>
+            <span class="stat-number" data-target="registered_salons">--</span><span class="stat-unit">店舗</span>
+          </div>
+          <span class="stat-label">登録サロン数</span>
+        </div>
+      </div>
+      <p class="stats-updated" id="statsUpdated"></p>
     </div>
   </section>
 
@@ -1929,6 +2012,77 @@
         copyText.textContent = 'コピー';
       }, 2000);
     });
+
+    // ─── Stats Bar ───
+    (function() {
+      function formatStatNumber(key, value) {
+        if (key === 'total_tokens') return Math.round(value / 10000);
+        return value;
+      }
+
+      function formatDate(dateStr) {
+        var parts = dateStr.split('-');
+        return parts[0] + '年' + parseInt(parts[1], 10) + '月' + parseInt(parts[2], 10) + '日';
+      }
+
+      function easeOutExpo(t) {
+        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      }
+
+      function animateCountUp(el, target, duration) {
+        var start = performance.now();
+        function tick(now) {
+          var elapsed = now - start;
+          var progress = Math.min(elapsed / duration, 1);
+          var current = Math.round(easeOutExpo(progress) * target);
+          el.textContent = current.toLocaleString();
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      fetch('./stats.json')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var statsSection = document.getElementById('statsSection');
+          if (!statsSection) return;
+
+          var targets = {
+            weekly_signups: formatStatNumber('weekly_signups', data.weekly_signups),
+            total_tokens: formatStatNumber('total_tokens', data.total_tokens),
+            registered_salons: formatStatNumber('registered_salons', data.registered_salons)
+          };
+
+          // Set updated date
+          if (data.last_updated) {
+            var updatedEl = document.getElementById('statsUpdated');
+            if (updatedEl) updatedEl.textContent = '最終更新: ' + formatDate(data.last_updated);
+          }
+
+          // Animate on scroll into view
+          var animated = false;
+          var statsObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+              if (entry.isIntersecting && !animated) {
+                animated = true;
+                var numberEls = statsSection.querySelectorAll('.stat-number[data-target]');
+                numberEls.forEach(function(el) {
+                  var key = el.getAttribute('data-target');
+                  if (targets[key] !== undefined) {
+                    animateCountUp(el, targets[key], 2000);
+                  }
+                });
+                statsObserver.unobserve(entry.target);
+              }
+            });
+          }, { threshold: 0.3 });
+
+          statsObserver.observe(statsSection);
+        })
+        .catch(function(err) {
+          console.warn('Stats data could not be loaded:', err);
+        });
+    })();
 
     // ─── IntersectionObserver Scroll Reveal ───
     const observer = new IntersectionObserver(function(entries) {
