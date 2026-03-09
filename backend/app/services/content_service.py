@@ -8,7 +8,7 @@ from app.models.salon import Salon
 from app.models.stylist import Stylist
 from app.models.content import GeneratedContent
 from app.services.prompt_engine import build_full_prompt, get_prompt_for_chat_modification
-from app.services.gemini_service import generate_content_stream, generate_content
+from app.services.claude_service import generate_content_stream, generate_content
 from app.utils.char_counter import count_hpb_characters, count_characters, get_char_limit
 
 

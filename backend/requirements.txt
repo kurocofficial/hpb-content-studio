@@ -9,8 +9,11 @@ python-multipart==0.0.9
 # Supabase
 supabase==2.3.4
 
-# Gemini AI
+# Gemini AI (画像生成用に残す)
 google-generativeai==0.4.1
+
+# Claude AI (テキスト生成メイン)
+anthropic>=0.49.0
 
 # Environment & Config
 python-dotenv==1.0.1

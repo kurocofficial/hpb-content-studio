@@ -438,7 +438,7 @@ GET    /templates/:contentType   # 種別別テンプレート
 | プラン | テキスト生成 | 画像生成 | チャット修正 |
 |-------|------------|---------|-------------|
 | Free | 30回/月 | 0 | 3往復/セッション |
-| Pro | 無制限 (100回/時) | 50枚/月 | 無制限 (20往復/セッション) |
+| Pro | 無制限 (100回/時) | 50枚/月 | 20往復/セッション |
 
 ---
 
@@ -677,34 +677,35 @@ backend/
 | RLS | マルチテナントデータ分離 |
 | Realtime | 将来対応（チャットのリアルタイム更新等） |
 
-### 7.2 Gemini API
+### 7.2 Claude API（テキスト生成メイン）
 
 ```python
 # 使用モデル
-MODEL = "gemini-2.0-flash"
+MODEL_ID = "claude-haiku-4-5-20251001"  # Claude 4.5 Haiku
 
 # ストリーミング生成
 async def generate_text_stream(prompt: str):
-    response = model.generate_content(
-        prompt,
-        stream=True,
-        generation_config=GenerationConfig(
-            temperature=0.7,
-            max_output_tokens=2048,
-            top_p=0.95,
-        )
-    )
-    for chunk in response:
-        yield chunk.text
+    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    with client.messages.stream(
+        model=MODEL_ID,
+        max_tokens=2000,
+        temperature=0.7,
+        messages=[{"role": "user", "content": prompt}],
+    ) as stream:
+        for text in stream.text_stream:
+            yield text
 ```
 
-### 7.3 Nanobanana
+> **モデル選定理由**: Claude 4.5 Haiku は日本語テキスト生成の品質とコストのバランスが優れている。詳細なコスト分析は `docs/marketing/06_pricing_cost_analysis.md` を参照。
+
+### 7.3 Gemini API（画像生成用）
 
 ```python
-# 画像生成（Proプラン限定）
-async def generate_image(prompt: str, size: str = "688x516"):
-    # HPB推奨サイズでの生成
-    # ※実際のAPIインターフェースはNanobananaのドキュメントに従う
+# 画像生成（Proプラン限定） — Nanobanana 2 (Gemini 3.1 Flash Image Preview)
+# テキスト生成は Claude に移行済み。Gemini は画像生成用途で残す。
+async def generate_image(prompt: str, size: str = "1024x1024"):
+    # Nanobanana 2 APIでの生成
+    # ※実際のAPIインターフェースはGoogle公式ドキュメントに従う
     pass
 ```
 
