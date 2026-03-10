@@ -65,13 +65,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // 認証状態の変更をリッスン
-      supabase.auth.onAuthStateChange((event, session) => {
+      supabase.auth.onAuthStateChange((event: string, session: { user: { id: string; email?: string; created_at?: string } } | null) => {
         if (event === "SIGNED_IN" && session?.user) {
           set({
             user: {
               id: session.user.id,
               email: session.user.email || "",
-              created_at: session.user.created_at,
+              created_at: session.user.created_at || "",
             },
           });
         } else if (event === "SIGNED_OUT") {

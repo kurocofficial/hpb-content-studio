@@ -10,7 +10,6 @@ import {
   Settings,
   LogOut,
   Menu,
-  X,
   Store,
   Upload,
   UserCog,

@@ -27,7 +27,7 @@ interface StylistState {
   reset: () => void;
 }
 
-export const useStylistStore = create<StylistState>((set, get) => ({
+export const useStylistStore = create<StylistState>((set, _get) => ({
   stylists: [],
   selectedStylist: null,
   isLoading: false,

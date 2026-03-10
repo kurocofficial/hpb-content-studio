@@ -57,7 +57,6 @@ export default function GeneratePage() {
     isGenerating,
     generatedContent,
     contentId,
-    maxChars,
     error,
     generateContent,
     setGeneratedContent,

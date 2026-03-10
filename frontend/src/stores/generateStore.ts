@@ -2,7 +2,7 @@
  * コンテンツ生成状態管理ストア（Zustand）
  */
 import { create } from "zustand";
-import { ContentType, GeneratedContent } from "@/types";
+import { ContentType } from "@/types";
 import { getSession } from "@/lib/supabase";
 
 interface GenerateState {
@@ -30,7 +30,7 @@ interface GenerateState {
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-export const useGenerateStore = create<GenerateState>((set, get) => ({
+export const useGenerateStore = create<GenerateState>((set, _get) => ({
   isGenerating: false,
   generatedContent: "",
   contentId: null,

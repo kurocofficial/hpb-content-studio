@@ -707,9 +707,9 @@ export default function LandingPage() {
               </div>
 
               <h1 className="lp-serif lp-hero-anim lp-hero-anim-d1 text-[2.5rem] sm:text-[3.2rem] lg:text-[3.6rem] font-bold leading-[1.3] tracking-tight text-[#2C3E50]">
-                HPBの文章運用が、
+                HPBの文章運用、
                 <br />
-                <span className="lp-gradient-text">30分で1週間分。</span>
+                <span className="lp-gradient-text">Chromeタブですっきり。</span>
               </h1>
 
               <p className="lp-hero-anim lp-hero-anim-d2 mt-7 text-[#6B7B8D] text-base sm:text-lg leading-[1.9] max-w-lg mx-auto lg:mx-0">
