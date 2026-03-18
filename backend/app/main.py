@@ -31,16 +31,22 @@ app = FastAPI(
 )
 
 # CORS設定
+cors_origins = [
+    settings.frontend_url,
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://localhost:3000",
+    "https://hpb-content-studio.vercel.app",
+]
+# 重複と空文字を除去
+cors_origins = list(set(o for o in cors_origins if o))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        settings.frontend_url,
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175",
-        "http://localhost:5176",
-        "http://localhost:3000",
-    ],
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://hpb-content-studio(-[a-z0-9]+)?\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
