@@ -3,7 +3,11 @@
  */
 import { getSession } from "./supabase";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL || "";
+
+if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
+  console.error("[HPB Content Studio] VITE_API_URL が設定されていません。Vercelの環境変数を確認してください。");
+}
 
 class ApiClient {
   private baseUrl: string;
