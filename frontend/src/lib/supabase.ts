@@ -96,5 +96,27 @@ export const signOut = async () => {
   if (error) throw error;
 };
 
+// メールアドレス変更
+export const updateEmail = async (newEmail: string) => {
+  if (isMockMode) {
+    return { user: { ...MOCK_USER, email: newEmail } };
+  }
+  const { data, error } = await supabase.auth.updateUser({ email: newEmail });
+  if (error) throw error;
+  return data;
+};
+
+// パスワード変更
+export const updatePassword = async (newPassword: string) => {
+  if (isMockMode) {
+    return { user: MOCK_USER };
+  }
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+  if (error) throw error;
+  return data;
+};
+
 // モックモードかどうかをエクスポート
 export const isAuthMockMode = isMockMode;

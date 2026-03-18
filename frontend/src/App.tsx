@@ -19,6 +19,7 @@ import TeamSalonListPage from "@/pages/TeamSalonListPage";
 import OrgMembersPage from "@/pages/OrgMembersPage";
 import BillingPage from "@/pages/BillingPage";
 import BillingSuccessPage from "@/pages/BillingSuccessPage";
+import SettingsPage from "@/pages/SettingsPage";
 
 // Loading component
 function LoadingScreen() {
@@ -200,6 +201,16 @@ function App() {
           element={
             <ProtectedRoute>
               <OrgMembersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Settings */}
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <SettingsPage />
             </ProtectedRoute>
           }
         />
