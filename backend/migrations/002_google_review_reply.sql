@@ -20,11 +20,13 @@ CREATE INDEX IF NOT EXISTS idx_generated_contents_platform
 ON generated_contents (platform);
 
 -- prompt_templates に google_review_reply 用のデフォルトテンプレートを追加
-INSERT INTO prompt_templates (content_type, template_name, system_prompt, is_active)
-VALUES (
+INSERT INTO prompt_templates (content_type, name, template, is_active)
+SELECT
     'google_review_reply',
     'Google口コミ返信（デフォルト）',
     'あなたはGoogleビジネスプロフィールの口コミ返信のプロフェッショナルです。Googleマップに投稿されたお客様の口コミに対して、丁寧で誠実な返信文を作成します。',
     true
-)
-ON CONFLICT (content_type, template_name) DO NOTHING;
+WHERE NOT EXISTS (
+    SELECT 1 FROM prompt_templates
+    WHERE content_type = 'google_review_reply' AND name = 'Google口コミ返信（デフォルト）'
+);
