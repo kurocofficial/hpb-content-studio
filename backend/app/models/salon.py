@@ -28,9 +28,9 @@ class Salon(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "organization_id": self.organization_id,
+            "id": str(self.id),
+            "user_id": str(self.user_id),
+            "organization_id": str(self.organization_id) if self.organization_id else None,
             "name": self.name,
             "area": self.area,
             "concept": self.concept,

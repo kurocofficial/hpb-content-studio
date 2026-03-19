@@ -29,9 +29,9 @@ class Organization(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
+            "id": str(self.id),
             "name": self.name,
-            "owner_user_id": self.owner_user_id,
+            "owner_user_id": str(self.owner_user_id),
             "contact_email": self.contact_email,
             "contact_phone": self.contact_phone,
             "notes": self.notes,
@@ -57,9 +57,9 @@ class OrganizationMember(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
-            "organization_id": self.organization_id,
-            "user_id": self.user_id,
+            "id": str(self.id),
+            "organization_id": str(self.organization_id),
+            "user_id": str(self.user_id),
             "role": self.role,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
@@ -100,9 +100,9 @@ class CsvImportJob(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
-            "organization_id": self.organization_id,
-            "user_id": self.user_id,
+            "id": str(self.id),
+            "organization_id": str(self.organization_id),
+            "user_id": str(self.user_id),
             "import_type": self.import_type,
             "file_name": self.file_name,
             "status": self.status,

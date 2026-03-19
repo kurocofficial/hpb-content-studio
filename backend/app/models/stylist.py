@@ -29,8 +29,8 @@ class Stylist(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
-            "salon_id": self.salon_id,
+            "id": str(self.id),
+            "salon_id": str(self.salon_id),
             "name": self.name,
             "role": self.role,
             "years_experience": self.years_experience,

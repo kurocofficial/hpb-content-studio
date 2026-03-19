@@ -18,6 +18,8 @@ class GeneratedContent(Base, TimestampMixin):
     content = Column(Text, nullable=False)
     char_count = Column(Integer, nullable=False, default=0)
     prompt_used = Column(Text, nullable=True)  # 生成時に使用したプロンプト
+    input_tokens = Column(Integer, nullable=False, default=0)
+    output_tokens = Column(Integer, nullable=False, default=0)
 
     # リレーション
     salon = relationship("Salon", back_populates="generated_contents")
@@ -27,13 +29,15 @@ class GeneratedContent(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
-            "salon_id": self.salon_id,
-            "stylist_id": self.stylist_id,
+            "id": str(self.id),
+            "salon_id": str(self.salon_id),
+            "stylist_id": str(self.stylist_id) if self.stylist_id else None,
             "content_type": self.content_type,
             "content": self.content,
             "char_count": self.char_count,
             "prompt_used": self.prompt_used,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

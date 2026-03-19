@@ -22,8 +22,8 @@ class ChatSession(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
-            "content_id": self.content_id,
+            "id": str(self.id),
+            "content_id": str(self.content_id),
             "turn_count": self.turn_count,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
@@ -45,8 +45,8 @@ class ChatMessage(Base, TimestampMixin):
     def to_dict(self):
         """辞書に変換"""
         return {
-            "id": self.id,
-            "session_id": self.session_id,
+            "id": str(self.id),
+            "session_id": str(self.session_id),
             "role": self.role,
             "content": self.content,
             "created_at": self.created_at.isoformat() if self.created_at else None,
