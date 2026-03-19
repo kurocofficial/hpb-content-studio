@@ -416,7 +416,7 @@ export default function GeneratePage() {
           </div>
 
           {/* Right: Result */}
-          <div>
+          <div className="lg:sticky lg:top-4 lg:self-start">
             <ResultView
               content={generatedContent}
               maxChars={selectedConfig?.maxChars || 500}

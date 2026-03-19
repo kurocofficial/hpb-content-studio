@@ -63,7 +63,7 @@ export default function ResultView({
           value={content}
           onChange={(e) => onEdit?.(e.target.value)}
           placeholder={isGenerating ? "生成中..." : "生成されたテキストがここに表示されます"}
-          className="min-h-[200px] resize-y"
+          className="min-h-[500px] resize-y text-sm leading-relaxed"
           readOnly={isGenerating}
         />
 
