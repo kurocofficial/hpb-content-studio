@@ -1,2 +1,2 @@
-salon_name,name,role,years_experience,specialties,style_features,personality,writing_tone,writing_emoji,writing_sentence_style
-渋谷サロンA,田中太郎,店長,15,カット;カラー;パーマ,ナチュラル;エアリー,明るくて優しい,friendly,moderate,medium
+salon_name,name,role,years_experience,specialties,style_features,personality,writing_tone,writing_emoji,writing_sentence_style,dialect,first_person,customer_call,catchphrase,hobbies,motivation,motto,fashion_style,target_demographic,service_style,counseling_approach
+渋谷サロンA,田中太郎,店長,15,カット;カラー;パーマ,ナチュラル;エアリー,明るくて優しい,friendly,moderate,medium,関西弁,僕,お客さん,めっちゃええ感じ！,サーフィン;カフェ巡り,母が美容師で小さい頃から憧れていた,笑顔は最高のスタイリング,ストリート,20代〜30代メンズ,おしゃべり好き,写真を使ってイメージを共有しながら丁寧にヒアリングします

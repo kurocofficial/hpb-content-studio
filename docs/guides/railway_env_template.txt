@@ -1,0 +1,11 @@
+APP_ENV=production
+FRONTEND_URL=https://hpb-content-studio.vercel.app
+BACKEND_URL=https://hpb-content-studio-production.up.railway.app
+SECRET_KEY=CP-1eU3OQlvjT4RsD-R-x6QxSv_hkDVpTq0ToN7522uzzc3misA_08IDeMsrKiifb_yLzLfhIrDkT77NGBtuSA
+DB_MODE=supabase
+DATABASE_URL=xxxxx
+SUPABASE_URL=xxxxx
+SUPABASE_ANON_KEY=xxxxx
+SUPABASE_SERVICE_ROLE_KEY=xxxxx
+MOCK_AUTH=false
+ANTHROPIC_API_KEY=xxxxx

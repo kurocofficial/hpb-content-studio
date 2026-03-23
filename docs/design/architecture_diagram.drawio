@@ -1,0 +1,155 @@
+<mxfile host="app.diagrams.net" modified="2026-03-18T00:00:00.000Z" agent="HPB Content Studio" version="24.0.0">
+  <diagram id="architecture" name="System Architecture">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="HPB Content Studio — System Architecture" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== USER ==================== -->
+        <mxCell id="user_icon" value="&#x1f4bb; ユーザー（ブラウザ）" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=;fontStyle=1;fontSize=13;fillColor=#f5f5f5;strokeColor=#666666;rounded=1;arcSize=20;whiteSpace=wrap;html=1;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="570" y="80" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: User -> Frontend -->
+        <mxCell id="arrow_user_fe" value="HTTPS" style="endArrow=block;endFill=1;strokeWidth=2;strokeColor=#6366f1;fontColor=#6366f1;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="650" y="135" as="sourcePoint" />
+            <mxPoint x="650" y="175" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== FRONTEND (Vercel) ==================== -->
+        <mxCell id="fe_group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef2ff;strokeColor=#6366f1;strokeWidth=2;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="380" y="175" width="540" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="fe_title" value="フロントエンド — Vercel" style="text;html=1;fontSize=14;fontStyle=1;align=left;verticalAlign=middle;fillColor=#6366f1;strokeColor=none;fontColor=#ffffff;rounded=1;arcSize=30;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="390" y="182" width="200" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="fe_react" value="React 18&#xa;TypeScript" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6366f1;fontSize=11;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="400" y="222" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="fe_tailwind" value="TailwindCSS&#xa;shadcn/ui" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6366f1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="515" y="222" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="fe_zustand" value="Zustand&#xa;状態管理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6366f1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="630" y="222" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="fe_pages" value="ダッシュボード / スタイリスト管理 / コンテンツ生成 / チャット修正 / 設定" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c7d2fe;fontSize=10;fontColor=#4338ca;" vertex="1" parent="1">
+          <mxGeometry x="400" y="278" width="500" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="fe_url" value="hpb-content-studio.vercel.app" style="text;html=1;fontSize=10;fontStyle=2;align=right;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#6366f1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="182" width="210" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Frontend -> Backend -->
+        <mxCell id="arrow_fe_be" value="REST API + SSE（ストリーミング）" style="endArrow=block;endFill=1;strokeWidth=2;strokeColor=#059669;fontColor=#059669;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry x="-0.1" y="15" relative="1" as="geometry">
+            <mxPoint x="650" y="320" as="sourcePoint" />
+            <mxPoint x="650" y="380" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== BACKEND (Railway) ==================== -->
+        <mxCell id="be_group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#059669;strokeWidth=2;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="380" width="700" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="be_title" value="バックエンド API — Railway" style="text;html=1;fontSize=14;fontStyle=1;align=left;verticalAlign=middle;fillColor=#059669;strokeColor=none;fontColor=#ffffff;rounded=1;arcSize=30;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="310" y="387" width="220" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="be_fastapi" value="Python FastAPI&#xa;Uvicorn (ASGI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#059669;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="428" width="120" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="be_auth" value="&#x1f512; 認証&#xa;JWT検証" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#059669;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="455" y="428" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="be_prompt" value="&#x2728; プロンプト&#xa;エンジン" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="428" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="be_usage" value="&#x1f4ca; 利用量&#xa;管理" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#059669;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="685" y="428" width="100" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="be_detail" value="プロンプト合成: [テンプレート] + [サロン情報] + [スタイリストメタデータ] + [HPB文字数制約] + [ユーザー指示] → Claude API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbeb;strokeColor=#f59e0b;fontSize=10;fontColor=#92400e;" vertex="1" parent="1">
+          <mxGeometry x="320" y="485" width="670" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="be_endpoints" value="API: /auth  /salons  /stylists  /generate  /contents  /chat  /usage  /billing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#a7f3d0;fontSize=10;fontColor=#047857;" vertex="1" parent="1">
+          <mxGeometry x="320" y="522" width="670" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="be_url" value="hpb-content-studio-production.up.railway.app" style="text;html=1;fontSize=10;fontStyle=2;align=right;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#059669;" vertex="1" parent="1">
+          <mxGeometry x="700" y="387" width="290" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== BOTTOM ROW: Supabase + Claude ==================== -->
+
+        <!-- Arrow: Backend -> Supabase -->
+        <mxCell id="arrow_be_supa" value="SQL / Auth API" style="endArrow=block;endFill=1;strokeWidth=2;strokeColor=#f97316;fontColor=#f97316;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="565" as="sourcePoint" />
+            <mxPoint x="500" y="630" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrow: Backend -> Claude -->
+        <mxCell id="arrow_be_claude" value="Anthropic API" style="endArrow=block;endFill=1;strokeWidth=2;strokeColor=#8b5cf6;fontColor=#8b5cf6;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="565" as="sourcePoint" />
+            <mxPoint x="820" y="630" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== SUPABASE ==================== -->
+        <mxCell id="supa_group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7ed;strokeColor=#f97316;strokeWidth=2;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="630" width="400" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="supa_title" value="データベース + 認証 — Supabase" style="text;html=1;fontSize=14;fontStyle=1;align=left;verticalAlign=middle;fillColor=#f97316;strokeColor=none;fontColor=#ffffff;rounded=1;arcSize=30;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="310" y="637" width="280" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="supa_pg" value="&#x1f4be; PostgreSQL&#xa;データ永続化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#f97316;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="678" width="110" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="supa_auth" value="&#x1f511; Auth&#xa;JWT認証" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#f97316;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="445" y="678" width="110" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="supa_rls" value="&#x1f6e1; RLS&#xa;データ分離" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#f97316;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="570" y="678" width="110" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="supa_tables" value="テーブル: salons / stylists / generated_contents / chat_sessions / usage_tracking / subscriptions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#fed7aa;fontSize=9;fontColor=#9a3412;" vertex="1" parent="1">
+          <mxGeometry x="320" y="733" width="370" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="supa_note" value="xxxxx.supabase.co" style="text;html=1;fontSize=10;fontStyle=2;align=right;verticalAlign=middle;fillColor=none;strokeColor=none;fontColor=#f97316;" vertex="1" parent="1">
+          <mxGeometry x="560" y="637" width="130" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== CLAUDE AI ==================== -->
+        <mxCell id="claude_group" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#8b5cf6;strokeWidth=2;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="720" y="630" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="claude_title" value="AI テキスト生成 — Anthropic" style="text;html=1;fontSize=14;fontStyle=1;align=left;verticalAlign=middle;fillColor=#8b5cf6;strokeColor=none;fontColor=#ffffff;rounded=1;arcSize=30;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="637" width="260" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="claude_model" value="Claude 4.5 Haiku" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#8b5cf6;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="740" y="678" width="245" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="claude_features" value="&#x26a1; SSE ストリーミング出力&#xa;&#x1f4dd; サロンキャッチ / 紹介文 / プロフィール / ブログ記事&#xa;&#x1f4b0; 1回あたり約 ¥0.3〜2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c4b5fd;fontSize=10;fontColor=#5b21b6;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="740" y="722" width="245" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== SECURITY BADGE ==================== -->
+        <mxCell id="security_badge" value="&#x1f512; セキュリティ: 全経路HTTPS / JWT認証 / RLS データ分離 / 環境変数でキー管理 / CORS制御" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef2f2;strokeColor=#ef4444;fontSize=10;fontStyle=1;fontColor=#991b1b;" vertex="1" parent="1">
+          <mxGeometry x="300" y="820" width="700" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== COST BADGE ==================== -->
+        <mxCell id="cost_badge" value="&#x1f4b0; 月額コスト: 約 ¥1,000〜3,000（MVP フェーズ）｜ Pro 2〜3人で黒字化" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#22c55e;fontSize=10;fontStyle=1;fontColor=#166534;" vertex="1" parent="1">
+          <mxGeometry x="300" y="858" width="700" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

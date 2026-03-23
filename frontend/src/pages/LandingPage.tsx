@@ -98,10 +98,17 @@ function StatsBar() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    fetch("/stats.json")
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+    fetch(`${backendUrl}/api/v1/public/stats`)
       .then((res) => res.json())
       .then((data: StatsData) => setStats(data))
-      .catch(() => {});
+      .catch(() => {
+        // APIが使えない場合は静的JSONにフォールバック
+        fetch("/stats.json")
+          .then((res) => res.json())
+          .then((data: StatsData) => setStats(data))
+          .catch(() => {});
+      });
   }, []);
 
   useEffect(() => {
@@ -944,6 +951,26 @@ export default function LandingPage() {
             </p>
           </div>
 
+          <div className="relative">
+            {/* テストマーケティング期間中オーバーレイ */}
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[2px] rounded-2xl">
+              <div className="text-center px-6 py-8 max-w-lg">
+                <p className="lp-serif text-xl sm:text-2xl font-bold text-[#2C3E50] mb-3">
+                  料金プランは現在検討中です
+                </p>
+                <p className="text-[15px] text-[#6B7B8D] leading-[1.8]">
+                  Teamプランをご検討の方は<br className="hidden sm:block" />
+                  <span className="font-semibold text-[#2C3E50]">KUROCO株式会社</span>までお気軽にお問い合わせください
+                </p>
+                <a
+                  href="mailto:info@kuroco.team"
+                  className="inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-full bg-[#D4585A] hover:bg-[#B8484A] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(212,88,90,0.3)] hover:shadow-[0_6px_24px_rgba(212,88,90,0.4)] transition-all"
+                >
+                  info@kuroco.team
+                </a>
+              </div>
+            </div>
+
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Free Plan */}
             <div className="sr bg-white rounded-2xl border border-[#EDE4DA] p-8 flex flex-col">
@@ -1059,6 +1086,7 @@ export default function LandingPage() {
                 <a href="mailto:contact@salon-editorial.com">お問い合わせ</a>
               </Button>
             </div>
+          </div>
           </div>
         </div>
       </section>

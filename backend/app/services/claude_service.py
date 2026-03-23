@@ -3,7 +3,7 @@ Claude API連携サービス
 テキスト生成のメインモデルとしてClaude 4.5 Haikuを使用
 """
 import anthropic
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Dict, Optional, Tuple
 import asyncio
 
 from app.config import get_settings
@@ -21,7 +21,7 @@ def get_claude_client() -> anthropic.Anthropic:
 async def generate_content_stream(
     prompt: str,
     max_tokens: int = 2000,
-) -> AsyncGenerator[str, None]:
+) -> AsyncGenerator[Dict, None]:
     """
     ストリーミングでコンテンツを生成
 
@@ -30,7 +30,7 @@ async def generate_content_stream(
         max_tokens: 最大トークン数
 
     Yields:
-        生成されたテキストのチャンク
+        {"type": "text", "content": str} or {"type": "usage", "input_tokens": int, "output_tokens": int}
     """
     try:
         client = get_claude_client()
@@ -43,9 +43,17 @@ async def generate_content_stream(
             messages=[{"role": "user", "content": prompt}],
         ) as stream:
             for text in stream.text_stream:
-                yield text
+                yield {"type": "text", "content": text}
                 # イベントループに制御を戻す
                 await asyncio.sleep(0)
+
+            # ストリーム終了後にusage情報を取得
+            final_message = stream.get_final_message()
+            yield {
+                "type": "usage",
+                "input_tokens": final_message.usage.input_tokens,
+                "output_tokens": final_message.usage.output_tokens,
+            }
 
     except anthropic.APIError as e:
         raise Exception(f"Claude API エラー: {str(e)}")
@@ -54,7 +62,7 @@ async def generate_content_stream(
 async def generate_content(
     prompt: str,
     max_tokens: int = 2000,
-) -> str:
+) -> Tuple[str, Dict[str, int]]:
     """
     コンテンツを一括生成（非ストリーミング）
 
@@ -63,7 +71,7 @@ async def generate_content(
         max_tokens: 最大トークン数
 
     Returns:
-        生成されたテキスト
+        (生成されたテキスト, {"input_tokens": N, "output_tokens": N})
     """
     try:
         client = get_claude_client()
@@ -75,7 +83,12 @@ async def generate_content(
             messages=[{"role": "user", "content": prompt}],
         )
 
-        return message.content[0].text
+        usage_info = {
+            "input_tokens": message.usage.input_tokens,
+            "output_tokens": message.usage.output_tokens,
+        }
+
+        return message.content[0].text, usage_info
 
     except anthropic.APIError as e:
         raise Exception(f"Claude API エラー: {str(e)}")
@@ -85,7 +98,7 @@ async def generate_chat_response(
     messages: list,
     system_prompt: Optional[str] = None,
     max_tokens: int = 2000,
-) -> str:
+) -> Tuple[str, Dict[str, int]]:
     """
     チャット形式でコンテンツを生成
 
@@ -95,7 +108,7 @@ async def generate_chat_response(
         max_tokens: 最大トークン数
 
     Returns:
-        生成されたテキスト
+        (生成されたテキスト, {"input_tokens": N, "output_tokens": N})
     """
     try:
         client = get_claude_client()
@@ -122,7 +135,12 @@ async def generate_chat_response(
 
         message = client.messages.create(**kwargs)
 
-        return message.content[0].text
+        usage_info = {
+            "input_tokens": message.usage.input_tokens,
+            "output_tokens": message.usage.output_tokens,
+        }
+
+        return message.content[0].text, usage_info
 
     except anthropic.APIError as e:
         raise Exception(f"Claude API エラー: {str(e)}")

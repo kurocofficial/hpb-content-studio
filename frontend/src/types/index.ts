@@ -42,6 +42,9 @@ export interface Stylist {
   style_features: string[];
   personality: string | null;
   writing_style: WritingStyle | null;
+  language_style: LanguageStyle | null;
+  background: Background | null;
+  service_info: ServiceInfo | null;
   created_at: string;
   updated_at: string;
 }
@@ -52,6 +55,26 @@ export interface WritingStyle {
   sentence_style: "short" | "medium" | "long";
 }
 
+export interface LanguageStyle {
+  dialect?: "標準語" | "関西弁" | "博多弁" | "名古屋弁" | "東北弁" | "沖縄風" | null;
+  first_person?: "私" | "わたし" | "僕" | "あたし" | "自分" | null;
+  customer_call?: "お客様" | "ゲスト様" | "お客さん" | null;
+  catchphrase?: string | null;
+}
+
+export interface Background {
+  hobbies?: string | null;
+  motivation?: string | null;
+  motto?: string | null;
+  fashion_style?: string | null;
+}
+
+export interface ServiceInfo {
+  target_demographic?: string | null;
+  service_style?: "おしゃべり好き" | "落ち着いた空間重視" | "提案型" | "お任せ歓迎型" | null;
+  counseling_approach?: string | null;
+}
+
 export interface StylistCreateInput {
   name: string;
   role?: string;
@@ -60,6 +83,9 @@ export interface StylistCreateInput {
   style_features?: string[];
   personality?: string;
   writing_style?: WritingStyle;
+  language_style?: LanguageStyle;
+  background?: Background;
+  service_info?: ServiceInfo;
 }
 
 // コンテンツ生成関連

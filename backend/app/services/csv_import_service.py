@@ -262,6 +262,9 @@ async def import_stylists_csv(
                 style_features=validated.parse_style_features(),
                 personality=validated.personality,
                 writing_style=validated.to_writing_style(),
+                language_style=validated.to_language_style(),
+                background=validated.to_background(),
+                service_info=validated.to_service_info(),
             )
             db.add(stylist)
 

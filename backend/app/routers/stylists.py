@@ -97,6 +97,9 @@ async def create_stylist(
         style_features=request.style_features,
         personality=request.personality,
         writing_style=request.writing_style.model_dump() if request.writing_style else None,
+        language_style=request.language_style.model_dump(exclude_none=True) if request.language_style else None,
+        background=request.background.model_dump(exclude_none=True) if request.background else None,
+        service_info=request.service_info.model_dump(exclude_none=True) if request.service_info else None,
     )
 
     db.add(stylist)
@@ -195,7 +198,16 @@ async def update_stylist(
         update_data["personality"] = request.personality
     if request.writing_style is not None:
         stylist.writing_style = request.writing_style.model_dump()
-        update_data["writing_style"] = request.writing_style.model_dump()
+        update_data["writing_style"] = stylist.writing_style
+    if request.language_style is not None:
+        stylist.language_style = request.language_style.model_dump(exclude_none=True)
+        update_data["language_style"] = stylist.language_style
+    if request.background is not None:
+        stylist.background = request.background.model_dump(exclude_none=True)
+        update_data["background"] = stylist.background
+    if request.service_info is not None:
+        stylist.service_info = request.service_info.model_dump(exclude_none=True)
+        update_data["service_info"] = stylist.service_info
 
     if not update_data:
         raise HTTPException(

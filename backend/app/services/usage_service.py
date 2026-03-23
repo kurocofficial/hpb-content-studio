@@ -133,6 +133,8 @@ async def increment_usage(
     db: Session,
     user_id: str,
     content_type: str,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
 ) -> Dict[str, Any]:
     """
     利用量をインクリメント
@@ -141,6 +143,8 @@ async def increment_usage(
         db: DBセッション
         user_id: ユーザーID
         content_type: コンテンツタイプ
+        input_tokens: 入力トークン数
+        output_tokens: 出力トークン数
 
     Returns:
         更新後の利用量レコード
@@ -161,6 +165,8 @@ async def increment_usage(
             text_generation_count=0,
             blog_generation_count=0,
             image_generation_count=0,
+            total_input_tokens=0,
+            total_output_tokens=0,
         )
         db.add(usage)
 
@@ -169,6 +175,10 @@ async def increment_usage(
         usage.blog_generation_count = (usage.blog_generation_count or 0) + 1
     else:
         usage.text_generation_count = (usage.text_generation_count or 0) + 1
+
+    # トークン数を加算
+    usage.total_input_tokens = (usage.total_input_tokens or 0) + input_tokens
+    usage.total_output_tokens = (usage.total_output_tokens or 0) + output_tokens
 
     db.commit()
     db.refresh(usage)

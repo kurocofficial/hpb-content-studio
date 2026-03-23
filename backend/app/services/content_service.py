@@ -86,10 +86,14 @@ async def generate_text_content_stream(
 
     # ストリーミング生成
     full_text = ""
+    usage_info = {"input_tokens": 0, "output_tokens": 0}
     try:
-        async for chunk in generate_content_stream(prompt):
-            full_text += chunk
-            yield {"type": "chunk", "content": chunk}
+        async for event in generate_content_stream(prompt):
+            if event["type"] == "text":
+                full_text += event["content"]
+                yield {"type": "chunk", "content": event["content"]}
+            elif event["type"] == "usage":
+                usage_info = event
 
         # 完了通知（コンテンツタイプに応じた文字数カウント）
         char_count = count_characters(full_text, content_type)
@@ -101,6 +105,8 @@ async def generate_text_content_stream(
             "char_count": char_count,
             "max_chars": max_chars,
             "is_over_limit": char_count > max_chars,
+            "input_tokens": usage_info.get("input_tokens", 0),
+            "output_tokens": usage_info.get("output_tokens", 0),
         }
 
     except Exception as e:
@@ -114,6 +120,8 @@ async def save_generated_content(
     content_type: str,
     content: str,
     prompt_used: str,
+    input_tokens: int = 0,
+    output_tokens: int = 0,
 ) -> Dict[str, Any]:
     """
     生成されたコンテンツをDBに保存
@@ -125,6 +133,8 @@ async def save_generated_content(
         content_type: コンテンツタイプ
         content: 生成されたコンテンツ
         prompt_used: 使用したプロンプト
+        input_tokens: 入力トークン数
+        output_tokens: 出力トークン数
 
     Returns:
         保存されたコンテンツ
@@ -138,6 +148,8 @@ async def save_generated_content(
         content=content,
         char_count=char_count,
         prompt_used=prompt_used,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
     )
 
     db.add(generated_content)
@@ -197,7 +209,7 @@ async def generate_and_save_content(
     )
 
     # 生成
-    content = await generate_content(prompt)
+    content, usage_info = await generate_content(prompt)
 
     # 保存
     saved = await save_generated_content(
@@ -207,6 +219,8 @@ async def generate_and_save_content(
         content_type=content_type,
         content=content,
         prompt_used=prompt,
+        input_tokens=usage_info.get("input_tokens", 0),
+        output_tokens=usage_info.get("output_tokens", 0),
     )
 
     return saved
@@ -244,6 +258,6 @@ async def modify_content_with_chat(
     )
 
     # 生成
-    modified_content = await generate_content(prompt)
+    modified_content, _usage_info = await generate_content(prompt)
 
     return modified_content

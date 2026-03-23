@@ -21,6 +21,9 @@ class Stylist(Base, TimestampMixin):
     style_features = Column(JSON, nullable=True)  # スタイルの特徴（リスト）
     personality = Column(Text, nullable=True)  # 人柄・雰囲気
     writing_style = Column(JSON, nullable=True)  # 文体設定
+    language_style = Column(JSON, nullable=True)  # 言葉づかい（方言・一人称・呼び方・口癖）
+    background = Column(JSON, nullable=True)  # バックグラウンド（趣味・動機・座右の銘・ファッション）
+    service_info = Column(JSON, nullable=True)  # 接客スタイル（ターゲット層・接客・カウンセリング）
 
     # リレーション
     salon = relationship("Salon", back_populates="stylists")
@@ -38,6 +41,9 @@ class Stylist(Base, TimestampMixin):
             "style_features": self.style_features,
             "personality": self.personality,
             "writing_style": self.writing_style,
+            "language_style": self.language_style,
+            "background": self.background,
+            "service_info": self.service_info,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

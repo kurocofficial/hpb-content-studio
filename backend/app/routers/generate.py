@@ -99,11 +99,16 @@ async def generate_text(
                     yield f"data: {json.dumps({'type': 'chunk', 'content': event['content']})}\n\n"
 
                 elif event_type == "complete":
-                    # 利用量をインクリメント
+                    input_tokens = event.get("input_tokens", 0)
+                    output_tokens = event.get("output_tokens", 0)
+
+                    # 利用量をインクリメント（トークン数込み）
                     await increment_usage(
                         db=db,
                         user_id=current_user["id"],
                         content_type=content_type,
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
                     )
 
                     # コンテンツを保存
@@ -132,6 +137,8 @@ async def generate_text(
                         content_type=content_type,
                         content=full_content,
                         prompt_used=prompt,
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
                     )
 
                     yield f"data: {json.dumps({'type': 'complete', 'content_id': saved['id'], 'char_count': event['char_count'], 'max_chars': event['max_chars'], 'is_over_limit': event['is_over_limit']})}\n\n"

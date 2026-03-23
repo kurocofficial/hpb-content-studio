@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStylistStore } from "@/stores/stylistStore";
-import { WritingStyle } from "@/types";
+import { WritingStyle, LanguageStyle, Background, ServiceInfo } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,9 +20,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/useToast";
 import MainLayout from "@/components/layout/MainLayout";
-import { ArrowLeft, User, X, Plus } from "lucide-react";
+import { ArrowLeft, User, X, Plus, ChevronDown, ChevronRight, MessageSquare, Heart, Handshake } from "lucide-react";
+
+const EMPTY_LANGUAGE_STYLE: LanguageStyle = {
+  dialect: null,
+  first_person: null,
+  customer_call: null,
+  catchphrase: null,
+};
+
+const EMPTY_BACKGROUND: Background = {
+  hobbies: null,
+  motivation: null,
+  motto: null,
+  fashion_style: null,
+};
+
+const EMPTY_SERVICE_INFO: ServiceInfo = {
+  target_demographic: null,
+  service_style: null,
+  counseling_approach: null,
+};
 
 export default function StylistFormPage() {
   const navigate = useNavigate();
@@ -50,10 +75,22 @@ export default function StylistFormPage() {
       emoji_usage: "minimal",
       sentence_style: "medium",
     } as WritingStyle,
+    language_style: { ...EMPTY_LANGUAGE_STYLE } as LanguageStyle,
+    background: { ...EMPTY_BACKGROUND } as Background,
+    service_info: { ...EMPTY_SERVICE_INFO } as ServiceInfo,
   });
 
   const [newSpecialty, setNewSpecialty] = useState("");
   const [newStyleFeature, setNewStyleFeature] = useState("");
+  const [openSections, setOpenSections] = useState({
+    language: false,
+    background: false,
+    service: false,
+  });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   useEffect(() => {
     if (id) {
@@ -63,6 +100,10 @@ export default function StylistFormPage() {
 
   useEffect(() => {
     if (isEditing && selectedStylist) {
+      const hasLanguage = selectedStylist.language_style && Object.values(selectedStylist.language_style).some(v => v != null);
+      const hasBackground = selectedStylist.background && Object.values(selectedStylist.background).some(v => v != null);
+      const hasService = selectedStylist.service_info && Object.values(selectedStylist.service_info).some(v => v != null);
+
       setFormData({
         name: selectedStylist.name || "",
         role: selectedStylist.role || "",
@@ -75,6 +116,16 @@ export default function StylistFormPage() {
           emoji_usage: "minimal",
           sentence_style: "medium",
         },
+        language_style: selectedStylist.language_style || { ...EMPTY_LANGUAGE_STYLE },
+        background: selectedStylist.background || { ...EMPTY_BACKGROUND },
+        service_info: selectedStylist.service_info || { ...EMPTY_SERVICE_INFO },
+      });
+
+      // 既存データがあるセクションは開いておく
+      setOpenSections({
+        language: !!hasLanguage,
+        background: !!hasBackground,
+        service: !!hasService,
       });
     }
   }, [isEditing, selectedStylist]);
@@ -116,6 +167,15 @@ export default function StylistFormPage() {
     });
   };
 
+  const serializeOptionalJson = <T,>(obj: T): T | undefined => {
+    const entries = Object.entries(obj as Record<string, unknown>);
+    const hasValue = entries.some(([, v]) => v != null && v !== "");
+    if (!hasValue) return undefined;
+    return Object.fromEntries(
+      entries.map(([k, v]) => [k, v === "" ? null : v])
+    ) as T;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -138,6 +198,9 @@ export default function StylistFormPage() {
       style_features: formData.style_features,
       personality: formData.personality || undefined,
       writing_style: formData.writing_style,
+      language_style: serializeOptionalJson(formData.language_style),
+      background: serializeOptionalJson(formData.background),
+      service_info: serializeOptionalJson(formData.service_info),
     };
 
     try {
@@ -439,6 +502,331 @@ export default function StylistFormPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* === 詳細設定（折りたたみセクション） === */}
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground font-medium">
+              詳細設定（任意） — より個性的なコンテンツ生成のために
+            </p>
+
+            {/* Language Style */}
+            <Collapsible open={openSections.language} onOpenChange={() => toggleSection("language")}>
+              <Card>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <MessageSquare className="h-5 w-5 mr-2 text-purple-500" />
+                        言葉づかい
+                      </span>
+                      {openSections.language ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </CardTitle>
+                    <CardDescription>方言・一人称・呼び方・口癖の設定</CardDescription>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="space-y-2">
+                        <Label>方言</Label>
+                        <Select
+                          value={formData.language_style.dialect || "__none__"}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              language_style: {
+                                ...formData.language_style,
+                                dialect: value === "__none__" ? null : value as LanguageStyle["dialect"],
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="選択してください" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">未設定</SelectItem>
+                            <SelectItem value="標準語">標準語</SelectItem>
+                            <SelectItem value="関西弁">関西弁</SelectItem>
+                            <SelectItem value="博多弁">博多弁</SelectItem>
+                            <SelectItem value="名古屋弁">名古屋弁</SelectItem>
+                            <SelectItem value="東北弁">東北弁</SelectItem>
+                            <SelectItem value="沖縄風">沖縄風</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>一人称</Label>
+                        <Select
+                          value={formData.language_style.first_person || "__none__"}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              language_style: {
+                                ...formData.language_style,
+                                first_person: value === "__none__" ? null : value as LanguageStyle["first_person"],
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="選択してください" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">未設定</SelectItem>
+                            <SelectItem value="私">私</SelectItem>
+                            <SelectItem value="わたし">わたし</SelectItem>
+                            <SelectItem value="僕">僕</SelectItem>
+                            <SelectItem value="あたし">あたし</SelectItem>
+                            <SelectItem value="自分">自分</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>お客様の呼び方</Label>
+                        <Select
+                          value={formData.language_style.customer_call || "__none__"}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              language_style: {
+                                ...formData.language_style,
+                                customer_call: value === "__none__" ? null : value as LanguageStyle["customer_call"],
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="選択してください" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">未設定</SelectItem>
+                            <SelectItem value="お客様">お客様</SelectItem>
+                            <SelectItem value="ゲスト様">ゲスト様</SelectItem>
+                            <SelectItem value="お客さん">お客さん</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="catchphrase">口癖（任意・最大100文字）</Label>
+                      <Input
+                        id="catchphrase"
+                        placeholder='例: 「〜なんですよね！」「めっちゃ〜」'
+                        maxLength={100}
+                        value={formData.language_style.catchphrase || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            language_style: {
+                              ...formData.language_style,
+                              catchphrase: e.target.value || null,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+
+            {/* Background */}
+            <Collapsible open={openSections.background} onOpenChange={() => toggleSection("background")}>
+              <Card>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <Heart className="h-5 w-5 mr-2 text-pink-500" />
+                        バックグラウンド
+                      </span>
+                      {openSections.background ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </CardTitle>
+                    <CardDescription>趣味・動機・座右の銘・ファッションスタイル</CardDescription>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="hobbies">趣味（最大200文字）</Label>
+                        <Input
+                          id="hobbies"
+                          placeholder="例: カフェ巡り、フェス、料理"
+                          maxLength={200}
+                          value={formData.background.hobbies || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              background: {
+                                ...formData.background,
+                                hobbies: e.target.value || null,
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="fashion_style">好きなファッション（最大100文字）</Label>
+                        <Input
+                          id="fashion_style"
+                          placeholder="例: ストリート, モード, ナチュラル, 韓国系"
+                          maxLength={100}
+                          value={formData.background.fashion_style || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              background: {
+                                ...formData.background,
+                                fashion_style: e.target.value || null,
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="motivation">美容師になった理由（最大300文字）</Label>
+                      <Textarea
+                        id="motivation"
+                        placeholder="例: 母が美容師で、小さい頃から憧れていました。人を笑顔にできるこの仕事が大好きです。"
+                        maxLength={300}
+                        rows={2}
+                        value={formData.background.motivation || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            background: {
+                              ...formData.background,
+                              motivation: e.target.value || null,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="motto">座右の銘（最大100文字）</Label>
+                      <Input
+                        id="motto"
+                        placeholder="例: 「一人一人に寄り添うスタイルを」"
+                        maxLength={100}
+                        value={formData.background.motto || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            background: {
+                              ...formData.background,
+                              motto: e.target.value || null,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+
+            {/* Service Info */}
+            <Collapsible open={openSections.service} onOpenChange={() => toggleSection("service")}>
+              <Card>
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <Handshake className="h-5 w-5 mr-2 text-amber-500" />
+                        接客スタイル
+                      </span>
+                      {openSections.service ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </CardTitle>
+                    <CardDescription>ターゲット客層・接客タイプ・カウンセリング</CardDescription>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="target_demographic">得意な客層（最大200文字）</Label>
+                        <Input
+                          id="target_demographic"
+                          placeholder="例: 20代OL、ママ世代、メンズ"
+                          maxLength={200}
+                          value={formData.service_info.target_demographic || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              service_info: {
+                                ...formData.service_info,
+                                target_demographic: e.target.value || null,
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>接客スタイル</Label>
+                        <Select
+                          value={formData.service_info.service_style || "__none__"}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              service_info: {
+                                ...formData.service_info,
+                                service_style: value === "__none__" ? null : value as ServiceInfo["service_style"],
+                              },
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="選択してください" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">未設定</SelectItem>
+                            <SelectItem value="おしゃべり好き">おしゃべり好き</SelectItem>
+                            <SelectItem value="落ち着いた空間重視">落ち着いた空間重視</SelectItem>
+                            <SelectItem value="提案型">提案型</SelectItem>
+                            <SelectItem value="お任せ歓迎型">お任せ歓迎型</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="counseling_approach">カウンセリングの特徴（最大300文字）</Label>
+                      <Textarea
+                        id="counseling_approach"
+                        placeholder="例: 写真や雑誌を使いながら、お客様の理想のイメージを丁寧にヒアリングします。髪質やライフスタイルも考慮して、再現性の高いスタイルを提案します。"
+                        maxLength={300}
+                        rows={2}
+                        value={formData.service_info.counseling_approach || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            service_info: {
+                              ...formData.service_info,
+                              counseling_approach: e.target.value || null,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          </div>
 
           {/* Submit */}
           <div className="flex justify-end space-x-3">
