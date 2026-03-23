@@ -100,7 +100,10 @@ function StatsBar() {
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
     fetch(`${backendUrl}/api/v1/public/stats`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data: StatsData) => setStats(data))
       .catch(() => {
         // APIが使えない場合は静的JSONにフォールバック
