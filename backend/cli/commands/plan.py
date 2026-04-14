@@ -68,6 +68,80 @@ def set_team(user_email, org_id):
         db.close()
 
 
+@plan.command(name="set-pro")
+@click.option("--user-email", required=True, help="ユーザーのメールアドレス")
+def set_pro(user_email):
+    """ユーザーにProプランを手動付与"""
+    db = SessionLocal()
+    try:
+        from app.config import get_settings
+        settings = get_settings()
+
+        if settings.mock_auth:
+            user_id = f"user-{user_email.replace('@', '-').replace('.', '-')}"
+        else:
+            from app.dependencies import get_supabase_client
+            supabase = get_supabase_client()
+            users = supabase.auth.admin.list_users()
+            target = next((u for u in users if u.email == user_email), None)
+            if not target:
+                click.echo(f"エラー: ユーザー {user_email} が見つかりません", err=True)
+                return
+            user_id = target.id
+
+        existing = db.query(Subscription).filter(Subscription.user_id == user_id).first()
+        if existing:
+            existing.plan = "pro"
+            existing.status = "active"
+            existing.organization_id = None
+            click.echo("既存のサブスクリプションをProプランに更新しました")
+        else:
+            db.add(Subscription(user_id=user_id, plan="pro", status="active"))
+            click.echo("Proプランのサブスクリプションを作成しました")
+
+        db.commit()
+        click.echo(f"  ユーザー: {user_email} ({user_id})")
+
+    finally:
+        db.close()
+
+
+@plan.command()
+@click.option("--user-email", required=True, help="ユーザーのメールアドレス")
+def revoke(user_email):
+    """ユーザーのプランをFreeに戻す"""
+    db = SessionLocal()
+    try:
+        from app.config import get_settings
+        settings = get_settings()
+
+        if settings.mock_auth:
+            user_id = f"user-{user_email.replace('@', '-').replace('.', '-')}"
+        else:
+            from app.dependencies import get_supabase_client
+            supabase = get_supabase_client()
+            users = supabase.auth.admin.list_users()
+            target = next((u for u in users if u.email == user_email), None)
+            if not target:
+                click.echo(f"エラー: ユーザー {user_email} が見つかりません", err=True)
+                return
+            user_id = target.id
+
+        existing = db.query(Subscription).filter(Subscription.user_id == user_id).first()
+        if existing:
+            existing.plan = "free"
+            existing.status = "active"
+            existing.organization_id = None
+            db.commit()
+            click.echo(f"Freeプランに戻しました")
+            click.echo(f"  ユーザー: {user_email} ({user_id})")
+        else:
+            click.echo(f"サブスクリプションが見つかりません（すでにFreeです）")
+
+    finally:
+        db.close()
+
+
 @plan.command()
 @click.option("--user-email", required=True, help="ユーザーのメールアドレス")
 def info(user_email):
