@@ -11,6 +11,17 @@ import {
   signOut as supabaseSignOut,
   getSession,
 } from "@/lib/supabase";
+import { useSalonStore } from "@/stores/salonStore";
+import { useStylistStore } from "@/stores/stylistStore";
+import { useOrganizationStore } from "@/stores/organizationStore";
+import { useGenerateStore } from "@/stores/generateStore";
+
+function resetAllStores() {
+  useSalonStore.getState().reset();
+  useStylistStore.getState().reset();
+  useOrganizationStore.getState().reset();
+  useGenerateStore.getState().reset();
+}
 
 interface AuthState {
   user: User | null;
@@ -67,6 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // 認証状態の変更をリッスン
       supabase.auth.onAuthStateChange((event: string, session: { user: { id: string; email?: string; created_at?: string } } | null) => {
         if (event === "SIGNED_IN" && session?.user) {
+          resetAllStores();
           set({
             user: {
               id: session.user.id,
@@ -74,8 +86,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               created_at: session.user.created_at || "",
             },
           });
+          get().fetchPlanInfo();
         } else if (event === "SIGNED_OUT") {
-          set({ user: null });
+          resetAllStores();
+          set({ user: null, plan: "free", subscription: null, organization: null, orgRole: null });
         }
       });
     } catch (error) {
@@ -91,6 +105,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { user } = await signInWithEmail(email, password);
 
       if (user) {
+        resetAllStores();
         set({
           user: {
             id: user.id,
@@ -99,6 +114,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           },
           isLoading: false,
         });
+        get().fetchPlanInfo();
       }
     } catch (error: any) {
       const message =
@@ -117,6 +133,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { user } = await signUpWithEmail(email, password);
 
       if (user) {
+        resetAllStores();
         set({
           user: {
             id: user.id,
@@ -125,6 +142,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           },
           isLoading: false,
         });
+        get().fetchPlanInfo();
       }
     } catch (error: any) {
       const message =
@@ -141,7 +159,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       await supabaseSignOut();
-      set({ user: null, isLoading: false });
+      resetAllStores();
+      set({ user: null, plan: "free", subscription: null, organization: null, orgRole: null, isLoading: false });
     } catch (error: any) {
       set({ error: error.message || "ログアウトに失敗しました", isLoading: false });
       throw error;
