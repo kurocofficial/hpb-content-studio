@@ -1,7 +1,7 @@
 """
 コンテンツ生成サービス
 """
-from typing import Optional, Dict, Any, AsyncGenerator
+from typing import Optional, Dict, Any, List, AsyncGenerator
 from sqlalchemy.orm import Session
 
 from app.models.salon import Salon
@@ -10,6 +10,17 @@ from app.models.content import GeneratedContent
 from app.services.prompt_engine import build_full_prompt, get_prompt_for_chat_modification
 from app.services.claude_service import generate_content_stream, generate_content
 from app.utils.char_counter import count_hpb_characters, count_characters, get_char_limit
+
+# 過去コンテンツ参照数（コンテンツタイプ別）
+PAST_CONTENT_LIMITS = {
+    "salon_catch": 3,
+    "salon_intro": 2,
+    "stylist_profile": 2,
+    "blog_article": 1,
+    "review_reply": 2,
+    "consultation": 1,
+    "google_review_reply": 2,
+}
 
 
 async def get_salon_by_user_id(db: Session, user_id: str) -> Optional[Dict[str, Any]]:
@@ -27,6 +38,24 @@ async def get_stylist_by_id(db: Session, stylist_id: str, salon_id: str) -> Opti
     return stylist.to_dict() if stylist else None
 
 
+async def get_past_contents(
+    db: Session,
+    salon_id: str,
+    stylist_id: Optional[str],
+    content_type: str,
+) -> List[Dict[str, Any]]:
+    """過去の生成コンテンツを取得（Pro/Team向け）"""
+    limit = PAST_CONTENT_LIMITS.get(content_type, 2)
+    query = db.query(GeneratedContent).filter(
+        GeneratedContent.salon_id == salon_id,
+        GeneratedContent.content_type == content_type,
+    )
+    if stylist_id:
+        query = query.filter(GeneratedContent.stylist_id == stylist_id)
+    results = query.order_by(GeneratedContent.created_at.desc()).limit(limit).all()
+    return [{"content": r.content, "created_at": str(r.created_at)} for r in results]
+
+
 async def generate_text_content_stream(
     db: Session,
     user_id: str,
@@ -37,6 +66,8 @@ async def generate_text_content_stream(
     review_text: Optional[str] = None,
     consultation_text: Optional[str] = None,
     star_rating: Optional[int] = None,
+    plan: str = "free",
+    use_past_contents: bool = False,
 ) -> AsyncGenerator[Dict[str, Any], None]:
     """
     テキストコンテンツをストリーミングで生成
@@ -51,6 +82,8 @@ async def generate_text_content_stream(
         review_text: お客様の口コミ文（review_reply/google_review_replyの場合）
         consultation_text: 悩み・相談内容（consultationの場合）
         star_rating: 口コミの星評価（google_review_replyの場合、1-5）
+        plan: ユーザーのプラン（'free', 'pro', 'team'）
+        use_past_contents: 過去コンテンツを参照するか（Pro/Team限定）
 
     Yields:
         生成状態と生成されたテキストのチャンク
@@ -69,6 +102,11 @@ async def generate_text_content_stream(
             yield {"type": "error", "content": "スタイリストが見つかりません"}
             return
 
+    # 過去コンテンツを取得（Pro/Team + トグルONの場合）
+    past_contents = None
+    if use_past_contents and plan in ("pro", "team"):
+        past_contents = await get_past_contents(db, salon["id"], stylist_id, content_type) or None
+
     # プロンプトを構築
     prompt = build_full_prompt(
         content_type=content_type,
@@ -79,6 +117,8 @@ async def generate_text_content_stream(
         review_text=review_text,
         consultation_text=consultation_text,
         star_rating=star_rating,
+        plan=plan,
+        past_contents=past_contents,
     )
 
     # 開始通知

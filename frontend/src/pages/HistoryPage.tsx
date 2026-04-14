@@ -32,8 +32,11 @@ import {
   MessageSquareReply,
   HelpCircle,
   Star,
+  Download,
 } from "lucide-react";
 import { formatRelativeTime } from "@/lib/utils";
+import { useAuthStore } from "@/stores/authStore";
+import { getSession } from "@/lib/supabase";
 
 interface ContentListResponse {
   items: GeneratedContent[];
@@ -63,9 +66,13 @@ const contentTypeLabels: Record<ContentType, string> = {
   google_review_reply: "Google口コミ返信",
 };
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 export default function HistoryPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { plan } = useAuthStore();
+  const isPremium = plan === "pro" || plan === "team";
 
   const [contents, setContents] = useState<GeneratedContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -104,6 +111,34 @@ export default function HistoryPage() {
     }
   };
 
+  const handleExport = async () => {
+    try {
+      const session = await getSession();
+      const params = filterType !== "all" ? `?content_type=${filterType}` : "";
+      const response = await fetch(`${API_URL}/api/v1/contents/export${params}`, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.detail || "エクスポートに失敗しました");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "hpb_contents_export.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast({ title: "エクスポート完了", description: "CSVファイルをダウンロードしました", variant: "success" });
+    } catch (error: any) {
+      toast({ title: "エラー", description: error.message || "エクスポートに失敗しました", variant: "destructive" });
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("このコンテンツを削除してもよろしいですか？")) {
       return;
@@ -137,6 +172,13 @@ export default function HistoryPage() {
               過去に生成したコンテンツ一覧
             </p>
           </div>
+          <div className="flex items-center gap-2">
+            {isPremium && (
+              <Button variant="outline" size="sm" onClick={handleExport}>
+                <Download className="h-4 w-4 mr-1" />
+                CSVエクスポート
+              </Button>
+            )}
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="すべて" />
@@ -150,6 +192,7 @@ export default function HistoryPage() {
               ))}
             </SelectContent>
           </Select>
+          </div>
         </div>
 
         {/* Content list */}

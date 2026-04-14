@@ -15,6 +15,9 @@ import {
   UserCog,
   CreditCard,
   ExternalLink,
+  Zap,
+  Calendar,
+  Crown,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,7 +32,12 @@ const navigation = [
   { name: "スタイリスト", href: "/stylists", icon: Users },
   { name: "コンテンツ生成", href: "/generate", icon: PenLine },
   { name: "履歴", href: "/history", icon: History },
-  { name: "プラン・お支払い", href: "/billing", icon: CreditCard },
+  { name: "プラン・お問い合わせ", href: "/billing", icon: CreditCard },
+];
+
+const proNavigation = [
+  { name: "一括生成", href: "/batch-generate", icon: Zap },
+  { name: "カレンダー", href: "/calendar", icon: Calendar },
 ];
 
 const teamNavigation = [
@@ -113,6 +121,51 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </Link>
               );
             })}
+
+            {/* Pro Navigation（Pro/Team or 開発環境で表示） */}
+            {(plan === "pro" || plan === "team" || import.meta.env.DEV) && (
+              <>
+                <div className="pt-4 pb-1">
+                  <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                    <Crown className="h-3 w-3" />
+                    Pro
+                  </p>
+                </div>
+                {proNavigation.map((item) => {
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={cn(
+                        "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors",
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.name}</span>
+                    </Link>
+                  );
+                })}
+              </>
+            )}
+
+            {/* Free ユーザー向けアップセルリンク */}
+            {plan === "free" && !import.meta.env.DEV && (
+              <div className="pt-4">
+                <Link
+                  to="/billing"
+                  className="flex items-center space-x-3 px-3 py-2 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <Crown className="h-5 w-5" />
+                  <span className="text-sm">Proにアップグレード</span>
+                </Link>
+              </div>
+            )}
 
             {/* Team Navigation（開発環境ではプラン不問で表示） */}
             {(plan === "team" || import.meta.env.DEV) && (

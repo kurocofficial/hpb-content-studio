@@ -20,6 +20,8 @@ import OrgMembersPage from "@/pages/OrgMembersPage";
 import BillingPage from "@/pages/BillingPage";
 import BillingSuccessPage from "@/pages/BillingSuccessPage";
 import SettingsPage from "@/pages/SettingsPage";
+import BatchGeneratePage from "@/pages/BatchGeneratePage";
+import CalendarPage from "@/pages/CalendarPage";
 
 // Loading component
 function LoadingScreen() {
@@ -201,6 +203,24 @@ function App() {
           element={
             <ProtectedRoute>
               <OrgMembersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Pro features */}
+        <Route
+          path="/batch-generate"
+          element={
+            <ProtectedRoute>
+              <BatchGeneratePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <CalendarPage />
             </ProtectedRoute>
           }
         />

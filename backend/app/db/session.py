@@ -47,5 +47,5 @@ def init_db():
     """データベースを初期化（テーブル作成）"""
     from app.db.base import Base
     # 全モデルをインポートしてBaseに登録
-    from app.models import salon, stylist, content, chat, usage, organization  # noqa
+    from app.models import salon, stylist, content, chat, usage, organization, calendar  # noqa
     Base.metadata.create_all(bind=engine)

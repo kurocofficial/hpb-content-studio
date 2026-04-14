@@ -5,6 +5,14 @@ import { create } from "zustand";
 import { ContentType } from "@/types";
 import { getSession } from "@/lib/supabase";
 
+interface AbResult {
+  content_id: string;
+  content: string;
+  char_count: number;
+  max_chars: number;
+  is_over_limit: boolean;
+}
+
 interface GenerateState {
   isGenerating: boolean;
   generatedContent: string;
@@ -13,6 +21,8 @@ interface GenerateState {
   maxChars: number;
   isOverLimit: boolean;
   error: string | null;
+  // ABテスト結果
+  abResults: { pattern_a: AbResult; pattern_b: AbResult } | null;
 
   // アクション
   generateContent: (
@@ -22,13 +32,46 @@ interface GenerateState {
     blogTheme?: string,
     reviewText?: string,
     consultationText?: string,
-    starRating?: number
+    starRating?: number,
+    usePastContents?: boolean
+  ) => Promise<void>;
+  generateAbTest: (
+    contentType: ContentType,
+    stylistId?: string,
+    additionalInstructions?: string,
+    blogTheme?: string,
+    reviewText?: string,
+    consultationText?: string,
+    starRating?: number,
+    usePastContents?: boolean
   ) => Promise<void>;
   setGeneratedContent: (content: string) => void;
   reset: () => void;
 }
 
 const API_URL = import.meta.env.VITE_API_URL || "";
+
+function buildRequestBody(
+  contentType: ContentType,
+  stylistId?: string,
+  additionalInstructions?: string,
+  blogTheme?: string,
+  reviewText?: string,
+  consultationText?: string,
+  starRating?: number,
+  usePastContents?: boolean
+) {
+  return {
+    content_type: contentType,
+    stylist_id: stylistId || null,
+    additional_instructions: additionalInstructions || null,
+    blog_theme: blogTheme || null,
+    review_text: reviewText || null,
+    consultation_text: consultationText || null,
+    star_rating: starRating || null,
+    use_past_contents: usePastContents || false,
+  };
+}
 
 export const useGenerateStore = create<GenerateState>((set, _get) => ({
   isGenerating: false,
@@ -38,6 +81,7 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
   maxChars: 0,
   isOverLimit: false,
   error: null,
+  abResults: null,
 
   generateContent: async (
     contentType: ContentType,
@@ -46,7 +90,8 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
     blogTheme?: string,
     reviewText?: string,
     consultationText?: string,
-    starRating?: number
+    starRating?: number,
+    usePastContents?: boolean
   ) => {
     set({
       isGenerating: true,
@@ -69,15 +114,7 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
           Authorization: `Bearer ${session.access_token}`,
           Accept: "text/event-stream",
         },
-        body: JSON.stringify({
-          content_type: contentType,
-          stylist_id: stylistId || null,
-          additional_instructions: additionalInstructions || null,
-          blog_theme: blogTheme || null,
-          review_text: reviewText || null,
-          consultation_text: consultationText || null,
-          star_rating: starRating || null,
-        }),
+        body: JSON.stringify(buildRequestBody(contentType, stylistId, additionalInstructions, blogTheme, reviewText, consultationText, starRating, usePastContents)),
       });
 
       if (!response.ok) {
@@ -144,6 +181,64 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
     }
   },
 
+  generateAbTest: async (
+    contentType: ContentType,
+    stylistId?: string,
+    additionalInstructions?: string,
+    blogTheme?: string,
+    reviewText?: string,
+    consultationText?: string,
+    starRating?: number,
+    usePastContents?: boolean
+  ) => {
+    set({
+      isGenerating: true,
+      generatedContent: "",
+      contentId: null,
+      charCount: 0,
+      error: null,
+      abResults: null,
+    });
+
+    try {
+      const session = await getSession();
+      if (!session?.access_token) {
+        throw new Error("認証が必要です");
+      }
+
+      const response = await fetch(`${API_URL}/api/v1/generate/text/ab`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(buildRequestBody(contentType, stylistId, additionalInstructions, blogTheme, reviewText, consultationText, starRating, usePastContents)),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || "ABテスト生成に失敗しました");
+      }
+
+      const data = await response.json();
+      set({
+        isGenerating: false,
+        abResults: data,
+        generatedContent: data.pattern_a.content,
+        contentId: data.pattern_a.content_id,
+        charCount: data.pattern_a.char_count,
+        maxChars: data.pattern_a.max_chars,
+        isOverLimit: data.pattern_a.is_over_limit,
+      });
+    } catch (error: any) {
+      set({
+        isGenerating: false,
+        error: error.message || "ABテスト生成に失敗しました",
+      });
+      throw error;
+    }
+  },
+
   setGeneratedContent: (content: string) => {
     set({ generatedContent: content });
   },
@@ -157,6 +252,7 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
       maxChars: 0,
       isOverLimit: false,
       error: null,
+      abResults: null,
     });
   },
 }));

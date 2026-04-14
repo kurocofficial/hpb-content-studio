@@ -107,13 +107,9 @@ async def check_usage_limit(
             "remaining": None,
         }
 
-    # Freeプランの制限チェック
-    if content_type == "blog_article":
-        limit = settings.free_monthly_blogs
-        used = usage.get("blog_generation_count", 0)
-    else:
-        limit = settings.free_monthly_generations
-        used = usage.get("text_generation_count", 0)
+    # Freeプランの制限チェック（テキスト・ブログ合算）
+    limit = settings.free_monthly_generations
+    used = usage.get("text_generation_count", 0)
 
     remaining = max(0, limit - used)
     allowed = remaining > 0
@@ -125,7 +121,7 @@ async def check_usage_limit(
         "limit": limit,
         "used": used,
         "remaining": remaining,
-        "message": None if allowed else f"今月の生成回数上限（{limit}回）に達しました。Proプランにアップグレードすると無制限で利用できます。大規模チェーンの方はTeamプランもご検討ください。",
+        "message": None if allowed else f"今月の生成回数上限（{limit}回）に達しました。Proプランにアップグレードすると無制限で利用できます。",
     }
 
 
@@ -170,11 +166,8 @@ async def increment_usage(
         )
         db.add(usage)
 
-    # 更新
-    if content_type == "blog_article":
-        usage.blog_generation_count = (usage.blog_generation_count or 0) + 1
-    else:
-        usage.text_generation_count = (usage.text_generation_count or 0) + 1
+    # 更新（テキスト・ブログ合算カウント）
+    usage.text_generation_count = (usage.text_generation_count or 0) + 1
 
     # トークン数を加算
     usage.total_input_tokens = (usage.total_input_tokens or 0) + input_tokens
@@ -204,41 +197,30 @@ async def get_usage_summary(
     plan = await get_user_plan(db, user_id)
     usage = await get_or_create_usage_tracking(db, user_id)
 
+    total_used = usage.get("text_generation_count", 0)
+    image_used = usage.get("image_generation_count", 0)
+
     if plan in ("pro", "team"):
         return {
             "plan": plan,
-            "text_generation": {
-                "used": usage.get("text_generation_count", 0),
-                "limit": None,
-                "remaining": None,
-            },
-            "blog_generation": {
-                "used": usage.get("blog_generation_count", 0),
+            "generation": {
+                "used": total_used,
                 "limit": None,
                 "remaining": None,
             },
             "image_generation": {
-                "used": usage.get("image_generation_count", 0),
+                "used": image_used,
                 "limit": None,
                 "remaining": None,
             },
         }
 
-    text_used = usage.get("text_generation_count", 0)
-    blog_used = usage.get("blog_generation_count", 0)
-    image_used = usage.get("image_generation_count", 0)
-
     return {
         "plan": plan,
-        "text_generation": {
-            "used": text_used,
+        "generation": {
+            "used": total_used,
             "limit": settings.free_monthly_generations,
-            "remaining": max(0, settings.free_monthly_generations - text_used),
-        },
-        "blog_generation": {
-            "used": blog_used,
-            "limit": settings.free_monthly_blogs,
-            "remaining": max(0, settings.free_monthly_blogs - blog_used),
+            "remaining": max(0, settings.free_monthly_generations - total_used),
         },
         "image_generation": {
             "used": image_used,

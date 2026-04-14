@@ -1,8 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { apiEndpoints } from "@/lib/api";
-import { redirectToCheckout } from "@/lib/stripe";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,192 +11,79 @@ import MainLayout from "@/components/layout/MainLayout";
 import {
   CreditCard,
   Crown,
-  AlertTriangle,
-  ExternalLink,
   Check,
-  Loader2,
+  Mail,
+  AlertCircle,
 } from "lucide-react";
+
+const CONTACT_EMAIL = "info@kuroco.team";
 
 export default function BillingPage() {
   const { subscription, fetchSubscription } = useAuthStore();
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-  const [isPortalLoading, setIsPortalLoading] = useState(false);
 
   useEffect(() => {
     fetchSubscription();
   }, [fetchSubscription]);
 
   const plan = subscription?.plan || "free";
-  const subscriptionStatus = subscription?.status || "active";
-
-  const handleUpgrade = async () => {
-    setIsCheckoutLoading(true);
-    try {
-      const result = await apiEndpoints.billing.createCheckout() as { checkout_url: string };
-      redirectToCheckout(result.checkout_url);
-    } catch (error) {
-      console.error("Checkout作成エラー:", error);
-      setIsCheckoutLoading(false);
-    }
-  };
-
-  const handlePortal = async () => {
-    setIsPortalLoading(true);
-    try {
-      const result = await apiEndpoints.billing.createPortal() as { portal_url: string };
-      window.location.href = result.portal_url;
-    } catch (error) {
-      console.error("Portal作成エラー:", error);
-      setIsPortalLoading(false);
-    }
-  };
-
-  const getTrialRemainingDays = (): number | null => {
-    if (!subscription?.trial_end) return null;
-    const trialEnd = new Date(subscription.trial_end);
-    const now = new Date();
-    const diffMs = trialEnd.getTime() - now.getTime();
-    return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
-  };
-
-  const trialDays = getTrialRemainingDays();
 
   return (
     <MainLayout>
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">
-            プラン・お支払い
+            プラン・お問い合わせ
           </h1>
           <p className="text-muted-foreground mt-2">
-            サブスクリプションの管理
+            現在のプランと機能の比較
           </p>
         </div>
-
-        {/* 支払い問題がある場合のアラート */}
-        {subscriptionStatus === "past_due" && (
-          <Card className="mb-6 border-destructive bg-destructive/5">
-            <CardContent className="py-4">
-              <div className="flex items-center space-x-3">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-                <div>
-                  <p className="font-medium text-destructive">
-                    お支払いに問題があります
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    お支払い方法を更新してください。解決しない場合、Proプランの機能が制限されます。
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="mt-3"
-                onClick={handlePortal}
-                disabled={isPortalLoading}
-              >
-                {isPortalLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <CreditCard className="h-4 w-4 mr-2" />
-                )}
-                お支払い方法を更新
-              </Button>
-            </CardContent>
-          </Card>
-        )}
 
         {/* 現在のプラン表示 */}
         <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center space-x-2">
-                  {plan === "pro" || plan === "team" ? (
-                    <Crown className="h-5 w-5 text-yellow-500" />
-                  ) : (
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
-                  )}
-                  <span>
-                    {plan === "team"
-                      ? "Teamプラン"
-                      : plan === "pro"
-                      ? "Proプラン"
-                      : "Freeプラン"}
-                  </span>
-                </CardTitle>
-                <CardDescription className="mt-1">
-                  {plan === "free" &&
-                    "月30回のテキスト生成が可能です"}
-                  {plan === "pro" &&
-                    subscriptionStatus === "trialing" &&
-                    trialDays !== null &&
-                    `トライアル期間中 — 残り${trialDays}日`}
-                  {plan === "pro" &&
-                    subscriptionStatus === "active" &&
-                    "無制限のテキスト生成をご利用いただけます"}
-                  {plan === "pro" &&
-                    subscriptionStatus === "past_due" &&
-                    "お支払いの確認が必要です"}
-                  {plan === "pro" &&
-                    subscriptionStatus === "canceled" &&
-                    "プランは期間終了時に解約されます"}
-                  {plan === "team" &&
-                    "Teamプラン — 管理者にお問い合わせください"}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* サブスクリプション期間情報 */}
-            {subscription?.current_period_end && plan === "pro" && (
-              <div className="text-sm text-muted-foreground mb-4">
-                <p>
-                  次回更新日:{" "}
-                  {new Date(subscription.current_period_end).toLocaleDateString(
-                    "ja-JP"
-                  )}
-                </p>
-                {subscription.cancel_at_period_end && (
-                  <p className="text-orange-600 mt-1">
-                    期間終了時に解約予定です
-                  </p>
+              <CardTitle className="flex items-center space-x-2">
+                {plan === "pro" || plan === "team" ? (
+                  <Crown className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <CreditCard className="h-5 w-5 text-muted-foreground" />
                 )}
-              </div>
-            )}
-
-            {/* アクションボタン */}
-            <div className="flex space-x-3">
-              {plan === "free" && (
-                <Button
-                  onClick={handleUpgrade}
-                  disabled={isCheckoutLoading}
-                  className="hpb-gradient text-white"
-                >
-                  {isCheckoutLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Crown className="h-4 w-4 mr-2" />
-                  )}
-                  Proプランにアップグレード
-                </Button>
-              )}
-              {plan === "pro" && (
-                <Button
-                  variant="outline"
-                  onClick={handlePortal}
-                  disabled={isPortalLoading}
-                >
-                  {isPortalLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                  )}
-                  お支払い管理ポータル
-                </Button>
-              )}
+                <span>
+                  {plan === "team"
+                    ? "Teamプラン"
+                    : plan === "pro"
+                    ? "Proプラン"
+                    : "Freeプラン"}
+                </span>
+              </CardTitle>
             </div>
-          </CardContent>
+            <CardDescription>
+              {plan === "free" && "月5回まで無料でご利用いただけます"}
+              {plan === "pro" && "無制限のテキスト生成をご利用いただけます"}
+              {plan === "team" && "Teamプラン — 複数人での運用が可能です"}
+            </CardDescription>
+          </CardHeader>
+          {plan === "free" && (
+            <CardContent>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-900">Proプランは現在準備中です</p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    ご興味のある方はKUROCO株式会社までお気軽にお問い合わせください。
+                  </p>
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900"
+                  >
+                    <Mail className="h-4 w-4" />
+                    {CONTACT_EMAIL}
+                  </a>
+                </div>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* プラン比較 */}
@@ -220,15 +104,19 @@ export default function BillingPage() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center space-x-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>月30回テキスト生成</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span>月5本ブログ生成</span>
+                    <span>テキスト・ブログ生成 月5回</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <Check className="h-4 w-4 text-green-500" />
                     <span>スタイリスト3名まで</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>チャット修正 3往復/セッション</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>HPB文字数カウンター</span>
                   </li>
                 </ul>
               </div>
@@ -244,41 +132,47 @@ export default function BillingPage() {
                 <h3 className="font-semibold mb-2 flex items-center space-x-1">
                   <Crown className="h-4 w-4 text-yellow-500" />
                   <span>Pro</span>
+                  <span className="ml-1 text-xs font-normal text-muted-foreground px-1.5 py-0.5 bg-amber-100 rounded">準備中</span>
                 </h3>
-                <p className="text-2xl font-bold mb-1">月額制</p>
-                <p className="text-xs text-muted-foreground mb-3">
-                  14日間無料トライアル付き
-                </p>
-                <ul className="space-y-2 text-sm">
+                <p className="text-2xl font-bold mb-1">¥980<span className="text-sm font-normal text-muted-foreground">/月</span></p>
+                <ul className="space-y-2 text-sm mt-3">
                   <li className="flex items-center space-x-2">
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span>テキスト生成 無制限</span>
+                    <Check className="h-4 w-4 text-yellow-500" />
+                    <span>テキスト・ブログ生成 無制限</span>
                   </li>
                   <li className="flex items-center space-x-2">
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span>ブログ生成 無制限</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-4 w-4 text-yellow-500" />
                     <span>スタイリスト20名まで</span>
                   </li>
                   <li className="flex items-center space-x-2">
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span>チャット修正 20ターン</span>
+                    <Check className="h-4 w-4 text-yellow-500" />
+                    <span>チャット修正 20往復/セッション</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-yellow-500" />
+                    <span>🏷️ 店舗ルール（タグ付け）</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-yellow-500" />
+                    <span>📚 過去投稿のAI記憶</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-yellow-500" />
+                    <span>詳細メタデータ反映</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-yellow-500" />
+                    <span>優先サポート</span>
                   </li>
                 </ul>
                 {plan === "free" && (
-                  <Button
-                    onClick={handleUpgrade}
-                    disabled={isCheckoutLoading}
-                    size="sm"
-                    className="mt-4 w-full"
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}?subject=Proプランについてのお問い合わせ`}
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium h-9 px-4 transition-colors"
                   >
-                    {isCheckoutLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : null}
-                    14日間無料で試す
-                  </Button>
+                    <Mail className="h-4 w-4" />
+                    お問い合わせ
+                  </a>
                 )}
               </div>
 
@@ -291,12 +185,12 @@ export default function BillingPage() {
                 <h3 className="font-semibold mb-2">Team</h3>
                 <p className="text-2xl font-bold mb-1">お問い合わせ</p>
                 <p className="text-xs text-muted-foreground mb-3">
-                  複数サロン運営向け
+                  複数サロン運営・チェーン向け
                 </p>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center space-x-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>Pro機能すべて</span>
+                    <span>Proの全機能</span>
                   </li>
                   <li className="flex items-center space-x-2">
                     <Check className="h-4 w-4 text-green-500" />
@@ -310,8 +204,35 @@ export default function BillingPage() {
                     <Check className="h-4 w-4 text-green-500" />
                     <span>メンバー管理</span>
                   </li>
+                  <li className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span>専任サポート</span>
+                  </li>
                 </ul>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}?subject=Teamプランについてのお問い合わせ`}
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background hover:bg-accent text-sm font-medium h-9 px-4 transition-colors"
+                >
+                  <Mail className="h-4 w-4" />
+                  お問い合わせ
+                </a>
               </div>
+            </div>
+
+            {/* お問い合わせ先 */}
+            <div className="mt-6 pt-6 border-t text-center">
+              <p className="text-sm text-muted-foreground">
+                ご不明な点は{" "}
+                <span className="font-medium text-foreground">KUROCO株式会社</span>{" "}
+                までお気軽にご連絡ください
+              </p>
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="inline-flex items-center gap-1.5 mt-2 text-sm font-medium text-primary hover:underline"
+              >
+                <Mail className="h-4 w-4" />
+                {CONTACT_EMAIL}
+              </a>
             </div>
           </CardContent>
         </Card>

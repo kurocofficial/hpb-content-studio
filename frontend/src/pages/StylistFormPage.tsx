@@ -27,7 +27,8 @@ import {
 } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/useToast";
 import MainLayout from "@/components/layout/MainLayout";
-import { ArrowLeft, User, X, Plus, ChevronDown, ChevronRight, MessageSquare, Heart, Handshake } from "lucide-react";
+import { ArrowLeft, User, X, Plus, ChevronDown, ChevronRight, MessageSquare, Heart, Handshake, Lock } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
 
 const EMPTY_LANGUAGE_STYLE: LanguageStyle = {
   dialect: null,
@@ -61,6 +62,8 @@ export default function StylistFormPage() {
     updateStylist,
   } = useStylistStore();
 
+  const { plan } = useAuthStore();
+  const isPremium = plan === "pro" || plan === "team";
   const isEditing = !!id;
 
   const [formData, setFormData] = useState({
@@ -505,9 +508,22 @@ export default function StylistFormPage() {
 
           {/* === 詳細設定（折りたたみセクション） === */}
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground font-medium">
-              詳細設定（任意） — より個性的なコンテンツ生成のために
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground font-medium">
+                詳細設定（任意） — より個性的なコンテンツ生成のために
+              </p>
+              {!isPremium && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                  <Lock className="h-3 w-3" />
+                  Pro
+                </span>
+              )}
+            </div>
+            {!isPremium && (
+              <p className="text-xs text-amber-600">
+                詳細設定はProプラン以上で生成に反映されます。登録自体は全プランで可能です。
+              </p>
+            )}
 
             {/* Language Style */}
             <Collapsible open={openSections.language} onOpenChange={() => toggleSection("language")}>

@@ -2,6 +2,8 @@
 Salonモデル
 """
 from sqlalchemy import Column, String, Text, ForeignKey
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base, TimestampMixin, generate_uuid
@@ -19,6 +21,7 @@ class Salon(Base, TimestampMixin):
     concept = Column(Text, nullable=True)
     target_customer = Column(String(200), nullable=True)
     strength = Column(Text, nullable=True)
+    rules = Column(JSON, nullable=True)  # Pro/Team限定: 生成ルール（[{"tag": "NGワード", "value": "..."}]）
 
     # リレーション
     stylists = relationship("Stylist", back_populates="salon", cascade="all, delete-orphan")
@@ -36,6 +39,7 @@ class Salon(Base, TimestampMixin):
             "concept": self.concept,
             "target_customer": self.target_customer,
             "strength": self.strength,
+            "rules": self.rules,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

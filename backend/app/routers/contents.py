@@ -1,14 +1,19 @@
 """
 コンテンツ管理エンドポイント
 """
+import csv
+import io
 import math
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, get_current_user
 from app.schemas.content import ContentResponse, ContentListResponse
 from app.models.salon import Salon
+from app.models.stylist import Stylist
 from app.models.content import GeneratedContent
+from app.services.usage_service import get_user_plan
 
 router = APIRouter()
 
@@ -61,6 +66,77 @@ async def list_contents(
         page=page,
         page_size=page_size,
         total_pages=total_pages,
+    )
+
+
+@router.get("/export")
+async def export_contents(
+    content_type: str = Query(None),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    コンテンツをCSVエクスポート（Pro/Team限定）
+    """
+    # プランチェック
+    plan = await get_user_plan(db, current_user["id"])
+    if plan == "free":
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="CSVエクスポートはProプラン以上で利用できます"
+        )
+
+    salon_id = get_user_salon_id(db, current_user["id"])
+
+    # クエリを構築
+    query = db.query(GeneratedContent).filter(GeneratedContent.salon_id == salon_id)
+    if content_type:
+        query = query.filter(GeneratedContent.content_type == content_type)
+
+    contents = query.order_by(GeneratedContent.created_at.desc()).all()
+
+    # スタイリスト名のマップを構築
+    stylist_ids = set(c.stylist_id for c in contents if c.stylist_id)
+    stylist_map = {}
+    if stylist_ids:
+        stylists = db.query(Stylist).filter(Stylist.id.in_(stylist_ids)).all()
+        stylist_map = {str(s.id): s.name for s in stylists}
+
+    # コンテンツタイプのラベルマップ
+    type_labels = {
+        "salon_catch": "サロンキャッチ",
+        "salon_intro": "サロン紹介文",
+        "stylist_profile": "スタイリストプロフィール",
+        "blog_article": "ブログ記事",
+        "review_reply": "口コミ返信",
+        "consultation": "悩み相談",
+        "google_review_reply": "Google口コミ返信",
+    }
+
+    # CSV生成
+    output = io.StringIO()
+    # BOM付きUTF-8でExcel対応
+    output.write('\ufeff')
+    writer = csv.writer(output)
+    writer.writerow(["スタイリスト名", "コンテンツ種別", "本文", "文字数", "生成日時"])
+
+    for c in contents:
+        writer.writerow([
+            stylist_map.get(str(c.stylist_id), "―") if c.stylist_id else "―",
+            type_labels.get(c.content_type, c.content_type),
+            c.content,
+            c.char_count,
+            c.created_at.strftime("%Y-%m-%d %H:%M") if c.created_at else "",
+        ])
+
+    output.seek(0)
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": "attachment; filename=hpb_contents_export.csv",
+        }
     )
 
 

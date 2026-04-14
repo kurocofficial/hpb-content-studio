@@ -73,7 +73,7 @@ async def root():
 
 
 # ルーターの登録
-from app.routers import auth, salons, stylists, generate, contents, usage, chat, organizations, csv_import, billing, public
+from app.routers import auth, salons, stylists, generate, contents, usage, chat, organizations, csv_import, billing, public, calendar
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["認証"])
 app.include_router(salons.router, prefix="/api/v1/salons", tags=["サロン"])
 app.include_router(stylists.router, prefix="/api/v1/stylists", tags=["スタイリスト"])
@@ -85,5 +85,6 @@ app.include_router(organizations.router, prefix="/api/v1/organizations", tags=["
 app.include_router(csv_import.router, prefix="/api/v1/organizations", tags=["CSV一括登録"])
 app.include_router(billing.router, prefix="/api/v1/billing", tags=["決済"])
 app.include_router(public.router, prefix="/api/v1/public", tags=["公開情報"])
+app.include_router(calendar.router, prefix="/api/v1/calendar", tags=["コンテンツカレンダー"])
 # CSVテンプレート用（組織IDなしのパス）
 app.include_router(csv_import.router, prefix="/api/v1/import", tags=["CSV一括登録"], include_in_schema=False)

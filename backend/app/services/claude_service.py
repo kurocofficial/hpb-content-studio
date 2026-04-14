@@ -12,15 +12,22 @@ from app.config import get_settings
 MODEL_ID = "claude-haiku-4-5-20251001"
 
 
+_claude_client: Optional[anthropic.Anthropic] = None
+
+
 def get_claude_client() -> anthropic.Anthropic:
-    """Claudeクライアントを初期化"""
-    settings = get_settings()
-    return anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    """Claudeクライアントを取得（シングルトン）"""
+    global _claude_client
+    if _claude_client is None:
+        settings = get_settings()
+        _claude_client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    return _claude_client
 
 
 async def generate_content_stream(
     prompt: str,
     max_tokens: int = 2000,
+    temperature: float = 0.7,
 ) -> AsyncGenerator[Dict, None]:
     """
     ストリーミングでコンテンツを生成
@@ -28,6 +35,7 @@ async def generate_content_stream(
     Args:
         prompt: プロンプト（システムプロンプト+コンテキストの結合文字列）
         max_tokens: 最大トークン数
+        temperature: 生成の温度パラメータ（0.0-1.0）
 
     Yields:
         {"type": "text", "content": str} or {"type": "usage", "input_tokens": int, "output_tokens": int}
@@ -39,7 +47,7 @@ async def generate_content_stream(
         with client.messages.stream(
             model=MODEL_ID,
             max_tokens=max_tokens,
-            temperature=0.7,
+            temperature=temperature,
             messages=[{"role": "user", "content": prompt}],
         ) as stream:
             for text in stream.text_stream:
@@ -62,6 +70,7 @@ async def generate_content_stream(
 async def generate_content(
     prompt: str,
     max_tokens: int = 2000,
+    temperature: float = 0.7,
 ) -> Tuple[str, Dict[str, int]]:
     """
     コンテンツを一括生成（非ストリーミング）
@@ -69,6 +78,7 @@ async def generate_content(
     Args:
         prompt: プロンプト
         max_tokens: 最大トークン数
+        temperature: 生成の温度パラメータ（0.0-1.0）
 
     Returns:
         (生成されたテキスト, {"input_tokens": N, "output_tokens": N})
@@ -79,7 +89,7 @@ async def generate_content(
         message = client.messages.create(
             model=MODEL_ID,
             max_tokens=max_tokens,
-            temperature=0.7,
+            temperature=temperature,
             messages=[{"role": "user", "content": prompt}],
         )
 

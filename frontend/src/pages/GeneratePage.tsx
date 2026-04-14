@@ -35,7 +35,11 @@ import {
   MessageSquareReply,
   HelpCircle,
   Star,
+  Crown,
+  BookOpen,
 } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import { Switch } from "@/components/ui/switch";
 
 const contentTypeIcons: Record<ContentType, React.ElementType> = {
   salon_catch: Sparkles,
@@ -58,7 +62,9 @@ export default function GeneratePage() {
     generatedContent,
     contentId,
     error,
+    abResults,
     generateContent,
+    generateAbTest,
     setGeneratedContent,
     reset,
   } = useGenerateStore();
@@ -75,6 +81,9 @@ export default function GeneratePage() {
   const [reviewText, setReviewText] = useState("");
   const [consultationText, setConsultationText] = useState("");
   const [starRating, setStarRating] = useState<number>(5);
+  const { plan } = useAuthStore();
+  const isPremium = plan === "pro" || plan === "team";
+  const [usePastContents, setUsePastContents] = useState(() => isPremium);
 
   const selectedConfig = CONTENT_TYPES.find(
     (t) => t.type === selectedContentType
@@ -104,7 +113,8 @@ export default function GeneratePage() {
         selectedContentType === "blog_article" ? blogTheme || undefined : undefined,
         (selectedContentType === "review_reply" || selectedContentType === "google_review_reply") ? reviewText || undefined : undefined,
         selectedContentType === "consultation" ? consultationText || undefined : undefined,
-        selectedContentType === "google_review_reply" ? starRating : undefined
+        selectedContentType === "google_review_reply" ? starRating : undefined,
+        usePastContents
       );
       toast({
         title: "生成完了",
@@ -117,6 +127,25 @@ export default function GeneratePage() {
         description: err.message || "生成に失敗しました",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleAbTest = async () => {
+    if (!salon) return;
+    try {
+      await generateAbTest(
+        selectedContentType,
+        (selectedStylistId && selectedStylistId !== "none") ? selectedStylistId : undefined,
+        additionalInstructions || undefined,
+        selectedContentType === "blog_article" ? blogTheme || undefined : undefined,
+        (selectedContentType === "review_reply" || selectedContentType === "google_review_reply") ? reviewText || undefined : undefined,
+        selectedContentType === "consultation" ? consultationText || undefined : undefined,
+        selectedContentType === "google_review_reply" ? starRating : undefined,
+        usePastContents
+      );
+      toast({ title: "ABテスト完了", description: "2パターンが生成されました", variant: "success" });
+    } catch (err: any) {
+      toast({ title: "生成エラー", description: err.message || "ABテスト生成に失敗しました", variant: "destructive" });
     }
   };
 
@@ -386,27 +415,83 @@ export default function GeneratePage() {
               </CardContent>
             </Card>
 
-            {/* Generate button */}
-            <Button
-              onClick={handleGenerate}
-              disabled={
-                isGenerating ||
-                (selectedContentType === "consultation" && (!selectedStylistId || selectedStylistId === "none"))
-              }
-              className="w-full h-12 text-lg"
-            >
-              {isGenerating ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                  生成中...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="h-5 w-5 mr-2" />
-                  {selectedConfig?.label}を生成
-                </>
+            {/* Pro features */}
+            <Card className={isPremium ? "border-amber-200 bg-amber-50/30" : "border-dashed"}>
+              <CardContent className="py-4 space-y-3">
+                {/* 過去コンテンツ参照トグル */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-amber-600" />
+                    <Label className="text-sm font-medium">過去の記事を参考にする</Label>
+                    {!isPremium && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                        Pro
+                      </span>
+                    )}
+                  </div>
+                  <Switch
+                    checked={usePastContents}
+                    onCheckedChange={setUsePastContents}
+                    disabled={!isPremium}
+                  />
+                </div>
+                {isPremium && usePastContents && (
+                  <p className="text-xs text-muted-foreground pl-6">
+                    過去の生成コンテンツを踏まえて、一貫性のある新しいコンテンツを生成します
+                  </p>
+                )}
+
+                {/* Pro hint: 詳細メタデータ反映 */}
+                {isPremium && (
+                  <div className="flex items-center gap-2 text-xs text-amber-700">
+                    <Crown className="h-3.5 w-3.5" />
+                    <span>詳細メタデータ（言葉づかい・バックグラウンド・接客スタイル）が反映されます</span>
+                  </div>
+                )}
+                {!isPremium && (
+                  <p className="text-xs text-muted-foreground">
+                    Proプランにアップグレードすると、詳細メタデータの反映・過去コンテンツ参照が使えます
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Generate buttons */}
+            <div className="space-y-2">
+              <Button
+                onClick={handleGenerate}
+                disabled={
+                  isGenerating ||
+                  (selectedContentType === "consultation" && (!selectedStylistId || selectedStylistId === "none"))
+                }
+                className="w-full h-12 text-lg"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                    生成中...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="h-5 w-5 mr-2" />
+                    {selectedConfig?.label}を生成
+                  </>
+                )}
+              </Button>
+              {isPremium && (
+                <Button
+                  variant="outline"
+                  onClick={handleAbTest}
+                  disabled={
+                    isGenerating ||
+                    (selectedContentType === "consultation" && (!selectedStylistId || selectedStylistId === "none"))
+                  }
+                  className="w-full"
+                >
+                  ABテスト生成（2パターン比較）
+                </Button>
               )}
-            </Button>
+            </div>
 
             {error && (
               <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md">
@@ -416,17 +501,44 @@ export default function GeneratePage() {
           </div>
 
           {/* Right: Result */}
-          <div className="lg:sticky lg:top-4 lg:self-start">
-            <ResultView
-              content={generatedContent}
-              maxChars={selectedConfig?.maxChars || 500}
-              charCountMode={selectedConfig?.charCountMode || "hpb"}
-              contentId={contentId}
-              isGenerating={isGenerating}
-              onEdit={setGeneratedContent}
-              onChatModify={handleChatModify}
-              onRegenerate={handleGenerate}
-            />
+          <div className="lg:sticky lg:top-4 lg:self-start space-y-4">
+            {abResults ? (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center text-sm font-medium text-primary">パターン A</div>
+                  <div className="text-center text-sm font-medium text-primary">パターン B</div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <ResultView
+                    content={abResults.pattern_a.content}
+                    maxChars={abResults.pattern_a.max_chars}
+                    charCountMode={selectedConfig?.charCountMode || "hpb"}
+                    contentId={abResults.pattern_a.content_id}
+                    isGenerating={false}
+                    onChatModify={() => navigate(`/chat/${abResults.pattern_a.content_id}`)}
+                  />
+                  <ResultView
+                    content={abResults.pattern_b.content}
+                    maxChars={abResults.pattern_b.max_chars}
+                    charCountMode={selectedConfig?.charCountMode || "hpb"}
+                    contentId={abResults.pattern_b.content_id}
+                    isGenerating={false}
+                    onChatModify={() => navigate(`/chat/${abResults.pattern_b.content_id}`)}
+                  />
+                </div>
+              </>
+            ) : (
+              <ResultView
+                content={generatedContent}
+                maxChars={selectedConfig?.maxChars || 500}
+                charCountMode={selectedConfig?.charCountMode || "hpb"}
+                contentId={contentId}
+                isGenerating={isGenerating}
+                onEdit={setGeneratedContent}
+                onChatModify={handleChatModify}
+                onRegenerate={handleGenerate}
+              />
+            )}
           </div>
         </div>
       </div>

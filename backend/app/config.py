@@ -37,8 +37,7 @@ class Settings(BaseSettings):
     stripe_pro_price_id: str = ""
 
     # 利用制限設定
-    free_monthly_generations: int = 30
-    free_monthly_blogs: int = 5
+    free_monthly_generations: int = 5  # テキスト・ブログ合算
     free_chat_turns_per_session: int = 3
     free_max_stylists_per_salon: int = 3
     pro_max_stylists_per_salon: int = 20

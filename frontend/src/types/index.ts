@@ -10,6 +10,11 @@ export interface User {
 }
 
 // サロン関連
+export interface SalonRule {
+  tag: string;
+  value: string;
+}
+
 export interface Salon {
   id: string;
   user_id: string;
@@ -19,6 +24,7 @@ export interface Salon {
   concept: string | null;
   target_customer: string | null;
   strength: string | null;
+  rules: SalonRule[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +35,7 @@ export interface SalonCreateInput {
   concept?: string;
   target_customer?: string;
   strength?: string;
+  rules?: SalonRule[];
 }
 
 // スタイリスト関連

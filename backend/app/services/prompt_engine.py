@@ -108,12 +108,13 @@ def _build_dialect_instruction(stylist: Optional[Dict[str, Any]]) -> str:
     return f"\n\n## 言葉づかいの指示\n自然な{dialect}のニュアンスを適度に取り入れてください。全文を方言にする必要はなく、語尾や相槌に{dialect}らしさを感じられる程度に留めてください。"
 
 
-def build_salon_context(salon: Dict[str, Any]) -> str:
+def build_salon_context(salon: Dict[str, Any], plan: str = "free") -> str:
     """
     サロン情報からコンテキストを構築
 
     Args:
         salon: サロン情報の辞書
+        plan: ユーザーのプラン（Pro/Team限定で店舗ルールを合成）
 
     Returns:
         サロンコンテキスト文字列
@@ -135,18 +136,28 @@ def build_salon_context(salon: Dict[str, Any]) -> str:
     if salon.get("strength"):
         parts.append(f"強み・特徴: {salon['strength']}")
 
+    # 店舗ルール（Pro/Team限定）
+    if plan in ("pro", "team") and salon.get("rules"):
+        rule_parts = []
+        for rule in salon["rules"]:
+            if rule.get("tag") and rule.get("value"):
+                rule_parts.append(f"【{rule['tag']}】{rule['value']}")
+        if rule_parts:
+            parts.append("生成ルール: " + " / ".join(rule_parts))
+
     if not parts:
         return ""
 
     return "## サロン情報\n" + "\n".join(parts)
 
 
-def build_stylist_context(stylist: Optional[Dict[str, Any]]) -> str:
+def build_stylist_context(stylist: Optional[Dict[str, Any]], plan: str = "free") -> str:
     """
     スタイリスト情報からコンテキストを構築
 
     Args:
         stylist: スタイリスト情報の辞書（Noneの場合もある）
+        plan: ユーザーのプラン（'free', 'pro', 'team'）
 
     Returns:
         スタイリストコンテキスト文字列
@@ -210,48 +221,47 @@ def build_stylist_context(stylist: Optional[Dict[str, Any]]) -> str:
         if style_parts:
             parts.append(f"文体の好み: {', '.join(style_parts)}")
 
-    # 言葉づかい
-    language_style = stylist.get("language_style")
-    if language_style:
-        lang_parts = []
-        if language_style.get("dialect"):
-            lang_parts.append(f"話し方の特徴: {language_style['dialect']}")
-        if language_style.get("first_person"):
-            lang_parts.append(f"一人称: {language_style['first_person']}")
-        if language_style.get("customer_call"):
-            lang_parts.append(f"お客様の呼び方: {language_style['customer_call']}")
-        if language_style.get("catchphrase"):
-            lang_parts.append(f"口癖: {language_style['catchphrase']}")
-        if lang_parts:
-            parts.append("言葉づかい: " + "、".join(lang_parts))
+    # 以下の詳細メタデータはPro/Team限定
+    if plan in ("pro", "team"):
+        language_style = stylist.get("language_style")
+        if language_style:
+            lang_parts = []
+            if language_style.get("dialect"):
+                lang_parts.append(f"話し方の特徴: {language_style['dialect']}")
+            if language_style.get("first_person"):
+                lang_parts.append(f"一人称: {language_style['first_person']}")
+            if language_style.get("customer_call"):
+                lang_parts.append(f"お客様の呼び方: {language_style['customer_call']}")
+            if language_style.get("catchphrase"):
+                lang_parts.append(f"口癖: {language_style['catchphrase']}")
+            if lang_parts:
+                parts.append("言葉づかい: " + "、".join(lang_parts))
 
-    # バックグラウンド
-    background = stylist.get("background")
-    if background:
-        bg_parts = []
-        if background.get("hobbies"):
-            bg_parts.append(f"趣味: {background['hobbies']}")
-        if background.get("motivation"):
-            bg_parts.append(f"美容師になった理由: {background['motivation']}")
-        if background.get("motto"):
-            bg_parts.append(f"座右の銘: {background['motto']}")
-        if background.get("fashion_style"):
-            bg_parts.append(f"好きなファッション: {background['fashion_style']}")
-        if bg_parts:
-            parts.append("バックグラウンド: " + "、".join(bg_parts))
+        background = stylist.get("background")
+        if background:
+            bg_parts = []
+            if background.get("hobbies"):
+                bg_parts.append(f"趣味: {background['hobbies']}")
+            if background.get("motivation"):
+                bg_parts.append(f"美容師になった理由: {background['motivation']}")
+            if background.get("motto"):
+                bg_parts.append(f"座右の銘: {background['motto']}")
+            if background.get("fashion_style"):
+                bg_parts.append(f"好きなファッション: {background['fashion_style']}")
+            if bg_parts:
+                parts.append("バックグラウンド: " + "、".join(bg_parts))
 
-    # 接客スタイル
-    service_info = stylist.get("service_info")
-    if service_info:
-        svc_parts = []
-        if service_info.get("target_demographic"):
-            svc_parts.append(f"得意な客層: {service_info['target_demographic']}")
-        if service_info.get("service_style"):
-            svc_parts.append(f"接客スタイル: {service_info['service_style']}")
-        if service_info.get("counseling_approach"):
-            svc_parts.append(f"カウンセリングの特徴: {service_info['counseling_approach']}")
-        if svc_parts:
-            parts.append("接客情報: " + "、".join(svc_parts))
+        service_info = stylist.get("service_info")
+        if service_info:
+            svc_parts = []
+            if service_info.get("target_demographic"):
+                svc_parts.append(f"得意な客層: {service_info['target_demographic']}")
+            if service_info.get("service_style"):
+                svc_parts.append(f"接客スタイル: {service_info['service_style']}")
+            if service_info.get("counseling_approach"):
+                svc_parts.append(f"カウンセリングの特徴: {service_info['counseling_approach']}")
+            if svc_parts:
+                parts.append("接客情報: " + "、".join(svc_parts))
 
     if not parts:
         return ""
@@ -268,6 +278,8 @@ def build_full_prompt(
     review_text: Optional[str] = None,
     consultation_text: Optional[str] = None,
     star_rating: Optional[int] = None,
+    plan: str = "free",
+    past_contents: Optional[list] = None,
 ) -> str:
     """
     完全なプロンプトを構築
@@ -281,6 +293,8 @@ def build_full_prompt(
         review_text: お客様の口コミ文（review_reply/google_review_replyの場合）
         consultation_text: 悩み・相談内容（consultationの場合）
         star_rating: 口コミの星評価（google_review_replyの場合、1-5）
+        plan: ユーザーのプラン（'free', 'pro', 'team'）
+        past_contents: 過去の生成コンテンツ一覧（Pro/Team限定）
 
     Returns:
         完全なプロンプト文字列
@@ -290,15 +304,22 @@ def build_full_prompt(
     # システムプロンプト（方言指示はstylistから取得）
     parts.append(build_system_prompt(content_type, stylist))
 
-    # サロンコンテキスト
-    salon_context = build_salon_context(salon)
+    # サロンコンテキスト（planを渡して店舗ルールをPro/Team限定合成）
+    salon_context = build_salon_context(salon, plan=plan)
     if salon_context:
         parts.append(salon_context)
 
-    # スタイリストコンテキスト
-    stylist_context = build_stylist_context(stylist)
+    # スタイリストコンテキスト（planで詳細メタデータの出し分け）
+    stylist_context = build_stylist_context(stylist, plan=plan)
     if stylist_context:
         parts.append(stylist_context)
+
+    # 過去コンテンツ参照（Pro/Team限定）
+    if past_contents:
+        past_parts = ["## 過去の生成コンテンツ（参考）", "以下は過去に生成したコンテンツです。一貫性を保ちつつ、異なる切り口で新しいコンテンツを作成してください。"]
+        for i, pc in enumerate(past_contents, 1):
+            past_parts.append(f"\n### 過去{i}\n{pc['content']}")
+        parts.append("\n".join(past_parts))
 
     # ブログテーマ（blog_articleの場合）
     if content_type == "blog_article" and blog_theme:

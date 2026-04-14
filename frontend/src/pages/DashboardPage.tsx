@@ -26,6 +26,11 @@ import {
   Star,
   Upload,
   Building2,
+  Zap,
+  Calendar,
+  Crown,
+  Download,
+  GitCompare,
 } from "lucide-react";
 import UpgradeBanner from "@/components/billing/UpgradeBanner";
 
@@ -208,6 +213,70 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Pro quick actions */}
+        {(plan === "pro" || plan === "team") && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Crown className="h-5 w-5 text-amber-500" />
+              Pro機能
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Card className="hpb-card-hover cursor-pointer" onClick={() => navigate("/batch-generate")}>
+                <CardContent className="py-4 text-center">
+                  <Zap className="h-6 w-6 text-amber-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium">一括生成</p>
+                </CardContent>
+              </Card>
+              <Card className="hpb-card-hover cursor-pointer" onClick={() => navigate("/calendar")}>
+                <CardContent className="py-4 text-center">
+                  <Calendar className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium">カレンダー</p>
+                </CardContent>
+              </Card>
+              <Card className="hpb-card-hover cursor-pointer" onClick={() => navigate("/history")}>
+                <CardContent className="py-4 text-center">
+                  <Download className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium">CSVエクスポート</p>
+                </CardContent>
+              </Card>
+              <Card className="hpb-card-hover cursor-pointer" onClick={() => navigate("/generate")}>
+                <CardContent className="py-4 text-center">
+                  <GitCompare className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium">ABテスト</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Free ユーザー向け Pro アップセルカード */}
+        {plan === "free" && salon && (
+          <Card className="mb-8 border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+            <CardContent className="py-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                    <Crown className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-amber-900">Proプランでもっと便利に</p>
+                    <p className="text-sm text-amber-700 mt-0.5">
+                      一括生成・ABテスト・カレンダー・詳細メタデータ反映など
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={() => navigate("/billing")}
+                >
+                  詳しく見る
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Team quick actions */}
