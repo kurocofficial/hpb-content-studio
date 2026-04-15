@@ -112,9 +112,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             email: user.email || "",
             created_at: user.created_at,
           },
-          isLoading: false,
         });
-        get().fetchPlanInfo();
+        await get().fetchPlanInfo();
+        set({ isLoading: false });
       }
     } catch (error: any) {
       const message =
@@ -140,9 +140,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             email: user.email || "",
             created_at: user.created_at,
           },
-          isLoading: false,
         });
-        get().fetchPlanInfo();
+        await get().fetchPlanInfo();
+        set({ isLoading: false });
       }
     } catch (error: any) {
       const message =
