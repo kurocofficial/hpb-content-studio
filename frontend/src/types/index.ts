@@ -147,7 +147,7 @@ export const CONTENT_TYPES: ContentTypeConfig[] = [
     type: "blog_article",
     label: "ブログ記事",
     description: "季節のスタイル提案やサロン情報を発信",
-    maxChars: 10000,
+    maxChars: 1000,
     icon: "PenLine",
     platform: "hpb",
     charCountMode: "hpb",
@@ -186,6 +186,7 @@ export interface GenerateRequest {
   stylist_id?: string;
   additional_instructions?: string;
   star_rating?: number;
+  target_char_count?: number;
 }
 
 export interface GeneratedContent {

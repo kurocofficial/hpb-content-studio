@@ -2,11 +2,22 @@
 Claude API連携サービス
 テキスト生成のメインモデルとしてClaude 4.5 Haikuを使用
 """
+import math
 import anthropic
 from typing import AsyncGenerator, Dict, Optional, Tuple
 import asyncio
 
 from app.config import get_settings
+
+MAX_TOKENS_CAP = 16000
+
+
+def compute_max_tokens(target_char_count: int) -> int:
+    """
+    目標文字数からmax_tokensを動的算出。
+    日本語全角1文字 ≈ 1〜1.5 tokens、2.5倍 + バッファ300
+    """
+    return min(MAX_TOKENS_CAP, math.ceil(target_char_count * 2.5) + 300)
 
 # Claude 4.5 Haiku モデルID
 MODEL_ID = "claude-haiku-4-5-20251001"

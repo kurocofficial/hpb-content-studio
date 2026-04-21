@@ -107,7 +107,7 @@ HPB_CHAR_LIMITS = {
     "salon_catch": 45,
     "salon_intro": 500,
     "stylist_profile": 200,
-    "blog_article": 10000,
+    "blog_article": 1000,
     "menu_description": 200,
     "coupon_description": 100,
     "review_reply": 500,
@@ -127,3 +127,17 @@ def get_char_limit(content_type: str) -> int:
         文字数上限
     """
     return HPB_CHAR_LIMITS.get(content_type, 500)
+
+
+def get_target_range(target: int, tolerance: float = 0.04) -> tuple:
+    """
+    目標文字数から許容帯域 (min, max) を計算
+
+    Args:
+        target: 目標文字数
+        tolerance: 許容誤差率（デフォルト4%）
+
+    Returns:
+        (min_chars, max_chars) タプル
+    """
+    return (math.floor(target * (1 - tolerance)), math.ceil(target * (1 + tolerance)))

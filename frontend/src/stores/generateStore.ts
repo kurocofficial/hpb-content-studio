@@ -15,11 +15,13 @@ interface AbResult {
 
 interface GenerateState {
   isGenerating: boolean;
+  isRetrying: boolean;
   generatedContent: string;
   contentId: string | null;
   charCount: number;
   maxChars: number;
   isOverLimit: boolean;
+  isInTargetRange: boolean;
   error: string | null;
   // ABテスト結果
   abResults: { pattern_a: AbResult; pattern_b: AbResult } | null;
@@ -33,7 +35,8 @@ interface GenerateState {
     reviewText?: string,
     consultationText?: string,
     starRating?: number,
-    usePastContents?: boolean
+    usePastContents?: boolean,
+    targetCharCount?: number
   ) => Promise<void>;
   generateAbTest: (
     contentType: ContentType,
@@ -43,7 +46,8 @@ interface GenerateState {
     reviewText?: string,
     consultationText?: string,
     starRating?: number,
-    usePastContents?: boolean
+    usePastContents?: boolean,
+    targetCharCount?: number
   ) => Promise<void>;
   setGeneratedContent: (content: string) => void;
   reset: () => void;
@@ -59,7 +63,8 @@ function buildRequestBody(
   reviewText?: string,
   consultationText?: string,
   starRating?: number,
-  usePastContents?: boolean
+  usePastContents?: boolean,
+  targetCharCount?: number
 ) {
   return {
     content_type: contentType,
@@ -70,16 +75,19 @@ function buildRequestBody(
     consultation_text: consultationText || null,
     star_rating: starRating || null,
     use_past_contents: usePastContents || false,
+    target_char_count: targetCharCount || null,
   };
 }
 
 export const useGenerateStore = create<GenerateState>((set, _get) => ({
   isGenerating: false,
+  isRetrying: false,
   generatedContent: "",
   contentId: null,
   charCount: 0,
   maxChars: 0,
   isOverLimit: false,
+  isInTargetRange: true,
   error: null,
   abResults: null,
 
@@ -91,13 +99,16 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
     reviewText?: string,
     consultationText?: string,
     starRating?: number,
-    usePastContents?: boolean
+    usePastContents?: boolean,
+    targetCharCount?: number
   ) => {
     set({
       isGenerating: true,
+      isRetrying: false,
       generatedContent: "",
       contentId: null,
       charCount: 0,
+      isInTargetRange: true,
       error: null,
     });
 
@@ -114,7 +125,7 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
           Authorization: `Bearer ${session.access_token}`,
           Accept: "text/event-stream",
         },
-        body: JSON.stringify(buildRequestBody(contentType, stylistId, additionalInstructions, blogTheme, reviewText, consultationText, starRating, usePastContents)),
+        body: JSON.stringify(buildRequestBody(contentType, stylistId, additionalInstructions, blogTheme, reviewText, consultationText, starRating, usePastContents, targetCharCount)),
       });
 
       if (!response.ok) {
@@ -154,12 +165,22 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
                 set({ generatedContent: accumulatedContent });
               }
 
+              if (parsed.type === "retry_start") {
+                set({ isRetrying: true });
+              }
+
+              if (parsed.type === "retry_replace") {
+                accumulatedContent = parsed.content;
+                set({ generatedContent: accumulatedContent, isRetrying: false });
+              }
+
               if (parsed.type === "complete") {
                 set({
                   contentId: parsed.content_id,
                   charCount: parsed.char_count,
                   maxChars: parsed.max_chars,
                   isOverLimit: parsed.is_over_limit,
+                  isInTargetRange: parsed.is_in_target_range ?? true,
                 });
               }
             } catch (e) {
@@ -171,7 +192,7 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
         }
       }
 
-      set({ isGenerating: false });
+      set({ isGenerating: false, isRetrying: false });
     } catch (error: any) {
       set({
         isGenerating: false,
@@ -189,13 +210,16 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
     reviewText?: string,
     consultationText?: string,
     starRating?: number,
-    usePastContents?: boolean
+    usePastContents?: boolean,
+    targetCharCount?: number
   ) => {
     set({
       isGenerating: true,
+      isRetrying: false,
       generatedContent: "",
       contentId: null,
       charCount: 0,
+      isInTargetRange: true,
       error: null,
       abResults: null,
     });
@@ -212,7 +236,7 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify(buildRequestBody(contentType, stylistId, additionalInstructions, blogTheme, reviewText, consultationText, starRating, usePastContents)),
+        body: JSON.stringify(buildRequestBody(contentType, stylistId, additionalInstructions, blogTheme, reviewText, consultationText, starRating, usePastContents, targetCharCount)),
       });
 
       if (!response.ok) {
@@ -246,11 +270,13 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
   reset: () => {
     set({
       isGenerating: false,
+      isRetrying: false,
       generatedContent: "",
       contentId: null,
       charCount: 0,
       maxChars: 0,
       isOverLimit: false,
+      isInTargetRange: true,
       error: null,
       abResults: null,
     });

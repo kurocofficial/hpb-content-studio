@@ -8,8 +8,8 @@ from app.models.salon import Salon
 from app.models.stylist import Stylist
 from app.models.content import GeneratedContent
 from app.services.prompt_engine import build_full_prompt, get_prompt_for_chat_modification
-from app.services.claude_service import generate_content_stream, generate_content
-from app.utils.char_counter import count_hpb_characters, count_characters, get_char_limit
+from app.services.claude_service import generate_content_stream, generate_content, compute_max_tokens
+from app.utils.char_counter import count_hpb_characters, count_characters, get_char_limit, get_target_range
 
 # 過去コンテンツ参照数（コンテンツタイプ別）
 PAST_CONTENT_LIMITS = {
@@ -68,6 +68,7 @@ async def generate_text_content_stream(
     star_rating: Optional[int] = None,
     plan: str = "free",
     use_past_contents: bool = False,
+    target_char_count: Optional[int] = None,
 ) -> AsyncGenerator[Dict[str, Any], None]:
     """
     テキストコンテンツをストリーミングで生成
@@ -107,6 +108,12 @@ async def generate_text_content_stream(
     if use_past_contents and plan in ("pro", "team"):
         past_contents = await get_past_contents(db, salon["id"], stylist_id, content_type) or None
 
+    # 目標文字数を確定
+    max_chars = get_char_limit(content_type)
+    target = target_char_count or max_chars
+    max_tokens = compute_max_tokens(target)
+    min_c, max_c = get_target_range(target, tolerance=0.04)
+
     # プロンプトを構築
     prompt = build_full_prompt(
         content_type=content_type,
@@ -119,6 +126,7 @@ async def generate_text_content_stream(
         star_rating=star_rating,
         plan=plan,
         past_contents=past_contents,
+        target_char_count=target,
     )
 
     # 開始通知
@@ -127,24 +135,48 @@ async def generate_text_content_stream(
     # ストリーミング生成
     full_text = ""
     usage_info = {"input_tokens": 0, "output_tokens": 0}
+    retried = False
     try:
-        async for event in generate_content_stream(prompt):
+        async for event in generate_content_stream(prompt, max_tokens=max_tokens):
             if event["type"] == "text":
                 full_text += event["content"]
                 yield {"type": "chunk", "content": event["content"]}
             elif event["type"] == "usage":
                 usage_info = event
 
-        # 完了通知（コンテンツタイプに応じた文字数カウント）
+        # 帯域チェック → 1回だけリトライ（blog_article除く）
         char_count = count_characters(full_text, content_type)
-        max_chars = get_char_limit(content_type)
+        needs_retry = char_count < min_c or char_count > max_c
+
+        if needs_retry:
+            yield {"type": "retry_start", "actual_chars": char_count, "min": min_c, "max": max_c}
+
+            direction = "内容を充実させ" if char_count < min_c else "内容を簡潔にまとめ"
+            retry_prompt = (
+                f"以下のテキストは{char_count}文字で生成されましたが、目標は{target}文字（許容{min_c}〜{max_c}文字）です。\n"
+                f"{direction}、{min_c}〜{max_c}文字に調整して、修正後のテキストのみを出力してください。\n\n"
+                f"## 調整前のテキスト\n{full_text}\n\n"
+                f"## 元のリクエスト内容（参考）\n{prompt}"
+            )
+            retry_text, retry_usage = await generate_content(retry_prompt, max_tokens=max_tokens)
+            full_text = retry_text
+            char_count = count_characters(full_text, content_type)
+            usage_info["input_tokens"] = usage_info.get("input_tokens", 0) + retry_usage.get("input_tokens", 0)
+            usage_info["output_tokens"] = usage_info.get("output_tokens", 0) + retry_usage.get("output_tokens", 0)
+            retried = True
+            yield {"type": "retry_replace", "content": full_text}
 
         yield {
             "type": "complete",
             "content": full_text,
             "char_count": char_count,
             "max_chars": max_chars,
+            "target_char_count": target,
+            "min_char_count": min_c,
+            "max_char_count_range": max_c,
             "is_over_limit": char_count > max_chars,
+            "is_in_target_range": min_c <= char_count <= max_c,
+            "retried": retried,
             "input_tokens": usage_info.get("input_tokens", 0),
             "output_tokens": usage_info.get("output_tokens", 0),
         }

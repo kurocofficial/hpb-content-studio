@@ -18,7 +18,7 @@ from app.services.content_service import (
 )
 from app.services.usage_service import check_usage_limit, increment_usage, get_user_plan
 from app.services.prompt_engine import build_full_prompt
-from app.services.claude_service import generate_content
+from app.services.claude_service import generate_content, compute_max_tokens
 from app.utils.char_counter import get_char_limit, count_characters
 from app.models.stylist import Stylist
 
@@ -93,6 +93,7 @@ async def generate_text(
                 star_rating=request.star_rating,
                 plan=plan,
                 use_past_contents=request.use_past_contents,
+                target_char_count=request.target_char_count,
             ):
                 event_type = event.get("type")
 
@@ -107,9 +108,18 @@ async def generate_text(
                     full_content += event["content"]
                     yield f"data: {json.dumps({'type': 'chunk', 'content': event['content']})}\n\n"
 
+                elif event_type == "retry_start":
+                    yield f"data: {json.dumps({'type': 'retry_start', 'actual_chars': event['actual_chars'], 'min': event['min'], 'max': event['max']})}\n\n"
+
+                elif event_type == "retry_replace":
+                    full_content = event["content"]
+                    yield f"data: {json.dumps({'type': 'retry_replace', 'content': event['content']})}\n\n"
+
                 elif event_type == "complete":
                     input_tokens = event.get("input_tokens", 0)
                     output_tokens = event.get("output_tokens", 0)
+                    # リトライ後のコンテンツで確定
+                    final_content = event.get("content", full_content)
 
                     # 利用量をインクリメント（トークン数込み）
                     await increment_usage(
@@ -138,6 +148,7 @@ async def generate_text(
                         consultation_text=request.consultation_text,
                         star_rating=request.star_rating,
                         plan=plan,
+                        target_char_count=request.target_char_count,
                     )
 
                     saved = await save_generated_content(
@@ -145,13 +156,13 @@ async def generate_text(
                         salon_id=salon["id"],
                         stylist_id=request.stylist_id,
                         content_type=content_type,
-                        content=full_content,
+                        content=final_content,
                         prompt_used=prompt,
                         input_tokens=input_tokens,
                         output_tokens=output_tokens,
                     )
 
-                    yield f"data: {json.dumps({'type': 'complete', 'content_id': saved['id'], 'char_count': event['char_count'], 'max_chars': event['max_chars'], 'is_over_limit': event['is_over_limit']})}\n\n"
+                    yield f"data: {json.dumps({'type': 'complete', 'content_id': saved['id'], 'char_count': event['char_count'], 'max_chars': event['max_chars'], 'target_char_count': event.get('target_char_count'), 'is_over_limit': event['is_over_limit'], 'is_in_target_range': event.get('is_in_target_range', True), 'retried': event.get('retried', False)})}\n\n"
 
             yield "data: [DONE]\n\n"
 
@@ -231,12 +242,14 @@ async def generate_ab_test(
         star_rating=request.star_rating,
         plan=plan,
         past_contents=past,
+        target_char_count=request.target_char_count,
     )
 
     # 2パターン同時生成（temperature違い）
+    ab_max_tokens = compute_max_tokens(request.target_char_count or get_char_limit(request.content_type))
     (result_a, usage_a), (result_b, usage_b) = await asyncio.gather(
-        generate_content(prompt, temperature=0.5),
-        generate_content(prompt, temperature=0.9),
+        generate_content(prompt, max_tokens=ab_max_tokens, temperature=0.5),
+        generate_content(prompt, max_tokens=ab_max_tokens, temperature=0.9),
     )
 
     # 両方保存
@@ -334,9 +347,11 @@ async def generate_batch(
                         star_rating=item.star_rating,
                         plan=plan,
                         past_contents=past,
+                        target_char_count=item.target_char_count,
                     )
 
-                    content, usage_info = await generate_content(prompt)
+                    batch_max_tokens = compute_max_tokens(item.target_char_count or get_char_limit(item.content_type))
+                    content, usage_info = await generate_content(prompt, max_tokens=batch_max_tokens)
 
                     saved = await save_generated_content(
                         db=db, salon_id=salon["id"], stylist_id=item.stylist_id,

@@ -59,6 +59,7 @@ export default function GeneratePage() {
   const { stylists, fetchStylists } = useStylistStore();
   const {
     isGenerating,
+    isRetrying,
     generatedContent,
     contentId,
     error,
@@ -85,6 +86,9 @@ export default function GeneratePage() {
   const isPremium = plan === "pro" || plan === "team";
   const [usePastContents, setUsePastContents] = useState(() => isPremium);
 
+  const initialConfig = CONTENT_TYPES.find((t) => t.type === initialType);
+  const [targetCharCount, setTargetCharCount] = useState<number>(initialConfig?.maxChars ?? 500);
+
   const selectedConfig = CONTENT_TYPES.find(
     (t) => t.type === selectedContentType
   );
@@ -94,6 +98,10 @@ export default function GeneratePage() {
     fetchStylists();
     return () => reset();
   }, [fetchSalon, fetchStylists, reset]);
+
+  useEffect(() => {
+    setTargetCharCount(selectedConfig?.maxChars ?? 500);
+  }, [selectedContentType, selectedConfig]);
 
   const handleGenerate = async () => {
     if (!salon) {
@@ -114,7 +122,8 @@ export default function GeneratePage() {
         (selectedContentType === "review_reply" || selectedContentType === "google_review_reply") ? reviewText || undefined : undefined,
         selectedContentType === "consultation" ? consultationText || undefined : undefined,
         selectedContentType === "google_review_reply" ? starRating : undefined,
-        usePastContents
+        usePastContents,
+        targetCharCount
       );
       toast({
         title: "生成完了",
@@ -141,7 +150,8 @@ export default function GeneratePage() {
         (selectedContentType === "review_reply" || selectedContentType === "google_review_reply") ? reviewText || undefined : undefined,
         selectedContentType === "consultation" ? consultationText || undefined : undefined,
         selectedContentType === "google_review_reply" ? starRating : undefined,
-        usePastContents
+        usePastContents,
+        targetCharCount
       );
       toast({ title: "ABテスト完了", description: "2パターンが生成されました", variant: "success" });
     } catch (err: any) {
@@ -397,6 +407,36 @@ export default function GeneratePage() {
               </Card>
             )}
 
+            {/* Target character count */}
+            <Card>
+              <CardHeader>
+                <CardTitle>目標文字数</CardTitle>
+                <CardDescription>
+                  ±4% の範囲（{Math.floor(targetCharCount * 0.96).toLocaleString()}〜{Math.ceil(targetCharCount * 1.04).toLocaleString()}文字）で生成します
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min={50}
+                    max={selectedConfig?.maxChars}
+                    value={targetCharCount}
+                    onChange={(e) => {
+                      const n = Math.floor(Number(e.target.value));
+                      if (!Number.isNaN(n)) {
+                        setTargetCharCount(Math.max(50, Math.min(selectedConfig?.maxChars ?? 500, n)));
+                      }
+                    }}
+                    className="w-32"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    文字（上限 {selectedConfig?.maxChars?.toLocaleString()}文字）
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Additional instructions */}
             <Card>
               <CardHeader>
@@ -532,8 +572,10 @@ export default function GeneratePage() {
                 content={generatedContent}
                 maxChars={selectedConfig?.maxChars || 500}
                 charCountMode={selectedConfig?.charCountMode || "hpb"}
+                targetChars={targetCharCount}
                 contentId={contentId}
                 isGenerating={isGenerating}
+                isRetrying={isRetrying}
                 onEdit={setGeneratedContent}
                 onChatModify={handleChatModify}
                 onRegenerate={handleGenerate}

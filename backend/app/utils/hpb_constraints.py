@@ -47,7 +47,7 @@ CONTENT_TYPES = {
         "platform": "hpb",
         "char_count_mode": "hpb",
         "description": "季節のスタイル提案やサロン情報を発信",
-        "max_chars": 10000,
+        "max_chars": 1000,
         "guidelines": [
             "読みやすい段落構成",
             "具体的なスタイル提案や情報を含める",

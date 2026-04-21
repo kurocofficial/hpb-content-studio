@@ -9,8 +9,10 @@ interface ResultViewProps {
   content: string;
   maxChars: number;
   charCountMode?: "hpb" | "standard";
+  targetChars?: number;
   contentId?: string | null;
   isGenerating?: boolean;
+  isRetrying?: boolean;
   onEdit?: (content: string) => void;
   onChatModify?: () => void;
   onRegenerate?: () => void;
@@ -20,8 +22,10 @@ export default function ResultView({
   content,
   maxChars,
   charCountMode = "hpb",
+  targetChars,
   contentId,
   isGenerating = false,
+  isRetrying = false,
   onEdit,
   onChatModify,
   onRegenerate,
@@ -62,14 +66,28 @@ export default function ResultView({
         <Textarea
           value={content}
           onChange={(e) => onEdit?.(e.target.value)}
-          placeholder={isGenerating ? "生成中..." : "生成されたテキストがここに表示されます"}
+          placeholder={
+            isRetrying
+              ? "文字数を調整中..."
+              : isGenerating
+              ? "生成中..."
+              : "生成されたテキストがここに表示されます"
+          }
           className="min-h-[500px] resize-y text-sm leading-relaxed"
           readOnly={isGenerating}
         />
 
+        {/* リトライ中インジケーター */}
+        {isRetrying && (
+          <p className="text-xs text-amber-600 flex items-center gap-1">
+            <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            文字数が目標範囲外のため、自動調整中...
+          </p>
+        )}
+
         {/* Character counter */}
         {content && (
-          <CharCounter text={content} maxChars={maxChars} charCountMode={charCountMode} />
+          <CharCounter text={content} maxChars={maxChars} charCountMode={charCountMode} targetChars={targetChars} />
         )}
 
         {/* Copy button */}

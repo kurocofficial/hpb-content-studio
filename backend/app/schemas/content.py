@@ -3,7 +3,7 @@
 """
 from typing import Optional, List, Literal
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 ContentType = Literal[
@@ -22,6 +22,20 @@ class GenerateRequest(BaseModel):
     consultation_text: Optional[str] = Field(None, max_length=2000, description="悩み・相談内容（consultationの場合）")
     star_rating: Optional[int] = Field(None, ge=1, le=5, description="口コミの星評価（google_review_replyの場合）")
     use_past_contents: bool = Field(False, description="過去コンテンツを参照するか（Pro/Team限定）")
+    target_char_count: Optional[int] = Field(
+        None, ge=50, le=10000,
+        description="目標文字数。未指定時はコンテンツタイプのmax_charsを使用"
+    )
+
+    @model_validator(mode="after")
+    def resolve_target_char_count(self):
+        from app.utils.hpb_constraints import CONTENT_TYPES
+        cap = CONTENT_TYPES.get(self.content_type, {}).get("max_chars", 500)
+        if self.target_char_count is None:
+            self.target_char_count = cap
+        elif self.target_char_count > cap:
+            raise ValueError(f"target_char_count {self.target_char_count} はコンテンツタイプの上限 {cap} を超えています")
+        return self
 
 
 class BatchGenerateItem(BaseModel):
@@ -33,6 +47,20 @@ class BatchGenerateItem(BaseModel):
     review_text: Optional[str] = Field(None, max_length=2000)
     consultation_text: Optional[str] = Field(None, max_length=2000)
     star_rating: Optional[int] = Field(None, ge=1, le=5)
+    target_char_count: Optional[int] = Field(
+        None, ge=50, le=10000,
+        description="目標文字数。未指定時はコンテンツタイプのmax_charsを使用"
+    )
+
+    @model_validator(mode="after")
+    def resolve_target_char_count(self):
+        from app.utils.hpb_constraints import CONTENT_TYPES
+        cap = CONTENT_TYPES.get(self.content_type, {}).get("max_chars", 500)
+        if self.target_char_count is None:
+            self.target_char_count = cap
+        elif self.target_char_count > cap:
+            raise ValueError(f"target_char_count {self.target_char_count} はコンテンツタイプの上限 {cap} を超えています")
+        return self
 
 
 class BatchGenerateRequest(BaseModel):
@@ -89,6 +117,5 @@ class UsageLimitResponse(BaseModel):
 class UsageSummaryResponse(BaseModel):
     """利用量サマリーレスポンス"""
     plan: str
-    text_generation: dict
-    blog_generation: dict
+    generation: dict
     image_generation: dict
