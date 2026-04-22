@@ -10,24 +10,22 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# SQLiteの場合はdataディレクトリを作成
-if settings.db_mode == "sqlite":
-    db_dir = os.path.dirname(settings.sqlite_url.replace("sqlite:///", ""))
-    if db_dir and not os.path.exists(db_dir):
-        os.makedirs(db_dir, exist_ok=True)
+# DATABASE_URLが設定されていればPostgreSQL、なければSQLite
+_database_url = os.getenv("DATABASE_URL", "")
+_use_postgres = bool(_database_url and _database_url.startswith("postgresql"))
 
-# エンジン設定
-if settings.db_mode == "sqlite":
+if _use_postgres:
     engine = create_engine(
-        settings.sqlite_url,
-        connect_args={"check_same_thread": False},
+        _database_url,
         echo=settings.app_env == "development",
     )
 else:
-    # Supabase PostgreSQL（将来用）
-    # DATABASE_URL形式: postgresql://user:password@host:port/dbname
+    db_dir = os.path.dirname(settings.sqlite_url.replace("sqlite:///", ""))
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
     engine = create_engine(
-        os.getenv("DATABASE_URL", ""),
+        settings.sqlite_url,
+        connect_args={"check_same_thread": False},
         echo=settings.app_env == "development",
     )
 

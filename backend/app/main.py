@@ -13,8 +13,9 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """アプリケーション起動時/終了時の処理"""
-    # 起動時: SQLiteモードならDB初期化
-    if settings.db_mode == "sqlite":
+    # 起動時: SQLiteモードならDB初期化（DATABASE_URLがなければSQLite）
+    import os
+    if not os.getenv("DATABASE_URL", ""):
         from app.db.session import init_db
         init_db()
         print("SQLite database initialized")
