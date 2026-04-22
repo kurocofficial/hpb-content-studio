@@ -39,14 +39,16 @@ async def generate_content_stream(
     prompt: str,
     max_tokens: int = 2000,
     temperature: float = 0.7,
+    system: Optional[str] = None,
 ) -> AsyncGenerator[Dict, None]:
     """
     ストリーミングでコンテンツを生成
 
     Args:
-        prompt: プロンプト（システムプロンプト+コンテキストの結合文字列）
+        prompt: ユーザーメッセージ
         max_tokens: 最大トークン数
         temperature: 生成の温度パラメータ（0.0-1.0）
+        system: システムプロンプト（指定時はsystem parameterとして送信）
 
     Yields:
         {"type": "text", "content": str} or {"type": "usage", "input_tokens": int, "output_tokens": int}
@@ -54,13 +56,17 @@ async def generate_content_stream(
     try:
         client = get_claude_client()
 
-        # 同期ストリーミングをasyncでラップ
-        with client.messages.stream(
+        kwargs = dict(
             model=MODEL_ID,
             max_tokens=max_tokens,
             temperature=temperature,
             messages=[{"role": "user", "content": prompt}],
-        ) as stream:
+        )
+        if system:
+            kwargs["system"] = system
+
+        # 同期ストリーミングをasyncでラップ
+        with client.messages.stream(**kwargs) as stream:
             for text in stream.text_stream:
                 yield {"type": "text", "content": text}
                 # イベントループに制御を戻す
@@ -82,14 +88,16 @@ async def generate_content(
     prompt: str,
     max_tokens: int = 2000,
     temperature: float = 0.7,
+    system: Optional[str] = None,
 ) -> Tuple[str, Dict[str, int]]:
     """
     コンテンツを一括生成（非ストリーミング）
 
     Args:
-        prompt: プロンプト
+        prompt: ユーザーメッセージ
         max_tokens: 最大トークン数
         temperature: 生成の温度パラメータ（0.0-1.0）
+        system: システムプロンプト（指定時はsystem parameterとして送信）
 
     Returns:
         (生成されたテキスト, {"input_tokens": N, "output_tokens": N})
@@ -97,12 +105,16 @@ async def generate_content(
     try:
         client = get_claude_client()
 
-        message = client.messages.create(
+        kwargs = dict(
             model=MODEL_ID,
             max_tokens=max_tokens,
             temperature=temperature,
             messages=[{"role": "user", "content": prompt}],
         )
+        if system:
+            kwargs["system"] = system
+
+        message = client.messages.create(**kwargs)
 
         usage_info = {
             "input_tokens": message.usage.input_tokens,

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.models.salon import Salon
 from app.models.stylist import Stylist
 from app.models.content import GeneratedContent
-from app.services.prompt_engine import build_full_prompt, get_prompt_for_chat_modification
+from app.services.prompt_engine import build_full_prompt, build_prompt_parts, get_prompt_for_chat_modification
 from app.services.claude_service import generate_content_stream, generate_content, compute_max_tokens
 from app.utils.char_counter import count_hpb_characters, count_characters, get_char_limit, get_target_range
 
@@ -114,8 +114,8 @@ async def generate_text_content_stream(
     max_tokens = compute_max_tokens(target)
     min_c, max_c = get_target_range(target, tolerance=0.04)
 
-    # プロンプトを構築
-    prompt = build_full_prompt(
+    # system/userに分割してプロンプトを構築（system parameterで文字数制約の遵守率向上）
+    system_prompt, user_message = build_prompt_parts(
         content_type=content_type,
         salon=salon,
         stylist=stylist,
@@ -137,14 +137,14 @@ async def generate_text_content_stream(
     usage_info = {"input_tokens": 0, "output_tokens": 0}
     retried = False
     try:
-        async for event in generate_content_stream(prompt, max_tokens=max_tokens):
+        async for event in generate_content_stream(user_message, max_tokens=max_tokens, system=system_prompt):
             if event["type"] == "text":
                 full_text += event["content"]
                 yield {"type": "chunk", "content": event["content"]}
             elif event["type"] == "usage":
                 usage_info = event
 
-        # 帯域チェック → 1回だけリトライ（blog_article除く）
+        # 帯域チェック → 1回だけリトライ
         char_count = count_characters(full_text, content_type)
         needs_retry = char_count < min_c or char_count > max_c
 
@@ -152,13 +152,19 @@ async def generate_text_content_stream(
             yield {"type": "retry_start", "actual_chars": char_count, "min": min_c, "max": max_c}
 
             direction = "内容を充実させ" if char_count < min_c else "内容を簡潔にまとめ"
-            retry_prompt = (
-                f"以下のテキストは{char_count}文字で生成されましたが、目標は{target}文字（許容{min_c}〜{max_c}文字）です。\n"
-                f"{direction}、{min_c}〜{max_c}文字に調整して、修正後のテキストのみを出力してください。\n\n"
-                f"## 調整前のテキスト\n{full_text}\n\n"
-                f"## 元のリクエスト内容（参考）\n{prompt}"
+            retry_system = (
+                f"あなたはテキスト調整の専門家です。\n"
+                f"与えられたテキストを指定された文字数（{min_c}〜{max_c}文字）に厳密に収めてください。\n"
+                f"文字数制約を最優先し、内容の質を保ちながら調整してください。\n"
+                f"修正後のテキストのみを出力し、説明は不要です。"
             )
-            retry_text, retry_usage = await generate_content(retry_prompt, max_tokens=max_tokens)
+            retry_user = (
+                f"以下のテキストは{char_count}文字です。{direction}、{min_c}〜{max_c}文字に調整してください。\n\n"
+                f"## テキスト\n{full_text}"
+            )
+            retry_text, retry_usage = await generate_content(
+                retry_user, max_tokens=max_tokens, temperature=0.1, system=retry_system
+            )
             full_text = retry_text
             char_count = count_characters(full_text, content_type)
             usage_info["input_tokens"] = usage_info.get("input_tokens", 0) + retry_usage.get("input_tokens", 0)

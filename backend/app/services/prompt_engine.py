@@ -298,6 +298,78 @@ def build_stylist_context(stylist: Optional[Dict[str, Any]], plan: str = "free")
     return "## スタイリスト情報\n" + "\n".join(parts)
 
 
+def build_prompt_parts(
+    content_type: str,
+    salon: Dict[str, Any],
+    stylist: Optional[Dict[str, Any]] = None,
+    additional_instructions: Optional[str] = None,
+    blog_theme: Optional[str] = None,
+    review_text: Optional[str] = None,
+    consultation_text: Optional[str] = None,
+    star_rating: Optional[int] = None,
+    plan: str = "free",
+    past_contents: Optional[list] = None,
+    target_char_count: Optional[int] = None,
+) -> tuple:
+    """
+    システムプロンプトとユーザーメッセージを分割して返す。
+    Claude APIのsystem parameterを使うことで文字数制約の遵守率が上がる。
+
+    Returns:
+        (system_prompt: str, user_message: str)
+    """
+    system_prompt = build_system_prompt(content_type, stylist, target_char_count=target_char_count)
+
+    parts = []
+
+    salon_context = build_salon_context(salon, plan=plan)
+    if salon_context:
+        parts.append(salon_context)
+
+    stylist_context = build_stylist_context(stylist, plan=plan)
+    if stylist_context:
+        parts.append(stylist_context)
+
+    if past_contents:
+        past_parts = ["## 過去の生成コンテンツ（参考）", "以下は過去に生成したコンテンツです。一貫性を保ちつつ、異なる切り口で新しいコンテンツを作成してください。"]
+        for i, pc in enumerate(past_contents, 1):
+            past_parts.append(f"\n### 過去{i}\n{pc['content']}")
+        parts.append("\n".join(past_parts))
+
+    if content_type == "blog_article" and blog_theme:
+        parts.append(f"## ブログテーマ\n{blog_theme}")
+
+    if content_type == "review_reply" and review_text:
+        parts.append(f"## お客様の口コミ\n{review_text}")
+
+    if content_type == "google_review_reply" and review_text:
+        star_display = ""
+        if star_rating:
+            star_display = f"\n評価: {'★' * star_rating}{'☆' * (5 - star_rating)}（{star_rating}/5）"
+        parts.append(f"## Googleの口コミ{star_display}\n{review_text}")
+
+    if content_type == "consultation" and consultation_text:
+        parts.append(f"## 相談内容\n{consultation_text}")
+
+    if additional_instructions:
+        parts.append(f"## 追加指示\n{additional_instructions}")
+
+    config = CONTENT_TYPES.get(content_type, {})
+    max_chars = config.get("max_chars", 500)
+    target = target_char_count or max_chars
+    min_c = math.floor(target * 0.96)
+    max_c = math.ceil(target * 1.04)
+    label = config.get("label", content_type)
+
+    parts.append(f"""## リクエスト
+上記の情報をもとに、{label}を作成してください。
+{min_c}〜{max_c}文字（目標{target}文字）で生成してください。
+完成したテキストのみを出力してください。""")
+
+    user_message = "\n\n".join(parts)
+    return system_prompt, user_message
+
+
 def build_full_prompt(
     content_type: str,
     salon: Dict[str, Any],
