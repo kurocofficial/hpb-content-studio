@@ -101,7 +101,7 @@ export default function DashboardPage() {
       icon: PenLine,
       title: "ブログ記事",
       description: "季節のスタイル提案やサロン情報を発信",
-      maxChars: 10000,
+      maxChars: 1000,
       color: "text-purple-500",
       bgColor: "bg-purple-50",
     },
@@ -368,7 +368,7 @@ export default function DashboardPage() {
                 ? "Teamプラン: 無制限"
                 : usage?.plan === "pro"
                 ? "Proプラン: 無制限"
-                : "Freeプラン: 月30回まで生成可能"}
+                : "Freeプラン: 月5回まで生成可能"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

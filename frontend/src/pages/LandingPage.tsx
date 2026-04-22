@@ -348,7 +348,7 @@ export default function LandingPage() {
     {
       icon: BookOpen,
       type: "ブログ記事",
-      limit: "10,000文字",
+      limit: "1,000文字",
       desc: "トレンド・季節・施術ノウハウ、読み応えのある記事を量産",
       color: "#4ECDC4",
       bg: "#F0FFFE",
@@ -752,7 +752,7 @@ export default function LandingPage() {
               </div>
 
               <p className="lp-hero-anim lp-hero-anim-d3 mt-5 text-xs text-[#B0A090]">
-                クレジットカード不要 ・ 月30回まで無料
+                クレジットカード不要 ・ 月5回まで無料
               </p>
             </div>
 

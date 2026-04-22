@@ -174,7 +174,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ plan: usage.plan });
 
       // サブスクリプション情報もフェッチ
-      get().fetchSubscription();
+      await get().fetchSubscription();
 
       // Teamプランの場合、組織情報を取得
       if (usage.plan === "team") {
