@@ -1,6 +1,7 @@
 """
 共通依存関係モジュール
 """
+import os
 from typing import Generator, Optional, Dict, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -9,7 +10,10 @@ from sqlalchemy.orm import Session
 from app.config import get_settings, Settings
 
 settings = get_settings()
-security = HTTPBearer(auto_error=not settings.mock_auth)
+
+# DATABASE_URLが設定されていれば本番モード（mock_auth無効）
+_use_real_auth = bool(os.getenv("DATABASE_URL", ""))
+security = HTTPBearer(auto_error=_use_real_auth)
 
 
 # ====================
@@ -32,7 +36,7 @@ def get_db() -> Generator[Session, None, None]:
 
 def get_supabase_client():
     """Supabaseクライアントを取得（Service Role権限）"""
-    if settings.db_mode == "sqlite":
+    if not _use_real_auth:
         return None
     from supabase import create_client, Client
     return create_client(
@@ -43,7 +47,7 @@ def get_supabase_client():
 
 def get_supabase_anon_client():
     """Supabaseクライアントを取得（Anon権限 - RLS適用）"""
-    if settings.db_mode == "sqlite":
+    if not _use_real_auth:
         return None
     from supabase import create_client, Client
     return create_client(
@@ -63,8 +67,8 @@ async def get_current_user(
     JWTトークンからユーザー情報を取得
     mock_authモード時は固定ユーザーを返す
     """
-    # モックモード: 固定ユーザーを返す
-    if settings.mock_auth:
+    # モックモード: DATABASE_URLが未設定の場合は固定ユーザーを返す
+    if not _use_real_auth:
         return {
             "id": settings.mock_user_id,
             "email": settings.mock_user_email,
@@ -170,8 +174,8 @@ async def get_current_user_optional(
     """
     認証オプショナル - ログインしていなくてもOK
     """
-    # モックモード: 固定ユーザーを返す
-    if settings.mock_auth:
+    # モックモード: DATABASE_URLが未設定の場合は固定ユーザーを返す
+    if not _use_real_auth:
         return {
             "id": settings.mock_user_id,
             "email": settings.mock_user_email,
