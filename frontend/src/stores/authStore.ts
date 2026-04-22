@@ -64,16 +64,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             email: session.user.email || "",
             created_at: session.user.created_at,
           },
-          isInitialized: true,
         });
-      } else {
-        set({ user: null, isInitialized: true });
+        await get().fetchPlanInfo();
       }
-
-      // プラン・組織情報をフェッチ
-      if (session?.user) {
-        get().fetchPlanInfo();
-      }
+      set({ isInitialized: true });
 
       // 認証状態の変更をリッスン
       supabase.auth.onAuthStateChange((event: string, session: { user: { id: string; email?: string; created_at?: string } } | null) => {
