@@ -9,6 +9,18 @@ from app.config import get_settings
 from app.models.usage import UsageTracking, Subscription
 
 
+def is_monitor_active() -> bool:
+    """モニター期間が有効かを判定"""
+    settings = get_settings()
+    if not settings.monitor_mode:
+        return False
+    try:
+        end = datetime.strptime(settings.monitor_end_date, "%Y-%m-%d").date()
+        return datetime.now().date() <= end
+    except ValueError:
+        return False
+
+
 def get_current_year_month() -> str:
     """現在の年月をYYYY-MM形式で取得"""
     return datetime.now().strftime("%Y-%m")
@@ -77,6 +89,14 @@ async def get_user_plan(db: Session, user_id: str) -> str:
     return "free"
 
 
+async def get_effective_plan(db: Session, user_id: str) -> str:
+    """モニター期間中はFreeをProに上書きしたプランを返す"""
+    plan = await get_user_plan(db, user_id)
+    if plan == "free" and is_monitor_active():
+        return "pro"
+    return plan
+
+
 async def check_usage_limit(
     db: Session,
     user_id: str,
@@ -94,7 +114,7 @@ async def check_usage_limit(
         制限チェック結果
     """
     settings = get_settings()
-    plan = await get_user_plan(db, user_id)
+    plan = await get_effective_plan(db, user_id)
     usage = await get_or_create_usage_tracking(db, user_id)
 
     # Pro/Teamプランは無制限
@@ -194,7 +214,7 @@ async def get_usage_summary(
         利用量サマリー
     """
     settings = get_settings()
-    plan = await get_user_plan(db, user_id)
+    plan = await get_effective_plan(db, user_id)
     usage = await get_or_create_usage_tracking(db, user_id)
 
     total_used = usage.get("text_generation_count", 0)

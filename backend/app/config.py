@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     stripe_pro_price_id: str = ""
 
+    # モニター期間設定
+    monitor_mode: bool = False
+    monitor_end_date: str = "2026-06-30"
+
     # 利用制限設定
     free_monthly_generations: int = 5  # テキスト・ブログ合算
     free_chat_turns_per_session: int = 3

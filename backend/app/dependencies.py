@@ -127,9 +127,9 @@ async def require_team_plan(
     組織情報を返す。
     """
     from app.services.organization_service import get_user_organization
-    from app.services.usage_service import get_user_plan
+    from app.services.usage_service import get_effective_plan
 
-    plan = await get_user_plan(db, current_user["id"])
+    plan = await get_effective_plan(db, current_user["id"])
     if plan != "team":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
