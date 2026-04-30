@@ -22,11 +22,15 @@ _CACHE_TTL = 300  # 5分
 @router.get("/monitor-status")
 def get_monitor_status():
     """モニター期間の状態を取得（認証不要）"""
+    import os
     settings = get_settings()
     active = is_monitor_active()
     return {
         "is_active": active,
         "end_date": settings.monitor_end_date if active else None,
+        "_debug_monitor_mode_raw": os.environ.get("MONITOR_MODE", "__NOT_SET__"),
+        "_debug_monitor_end_date_raw": os.environ.get("MONITOR_END_DATE", "__NOT_SET__"),
+        "_debug_settings_monitor_mode": settings.monitor_mode,
     }
 
 
