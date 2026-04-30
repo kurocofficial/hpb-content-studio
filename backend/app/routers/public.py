@@ -33,6 +33,7 @@ def get_monitor_status():
         "_debug_monitor_end_date_raw": os.environ.get("MONITOR_END_DATE", "__NOT_SET__"),
         "_debug_settings_monitor_mode": settings.monitor_mode,
         "_debug_relevant_env_keys": env_keys,
+        "_debug_all_env_keys": sorted(os.environ.keys()),
     }
 
 
