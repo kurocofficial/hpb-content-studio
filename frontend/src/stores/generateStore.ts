@@ -49,6 +49,7 @@ interface GenerateState {
     usePastContents?: boolean,
     targetCharCount?: number
   ) => Promise<void>;
+  adoptAbPattern: (pattern: "a" | "b") => void;
   setGeneratedContent: (content: string) => void;
   reset: () => void;
 }
@@ -130,7 +131,11 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || "生成に失敗しました");
+        const detail = errorData.detail;
+        const msg = typeof detail === "string" ? detail
+          : Array.isArray(detail) ? (detail[0]?.msg || "リクエストが不正です")
+          : "生成に失敗しました";
+        throw new Error(msg);
       }
 
       const reader = response.body?.getReader();
@@ -241,7 +246,11 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || "ABテスト生成に失敗しました");
+        const detail = errorData.detail;
+        const msg = typeof detail === "string" ? detail
+          : Array.isArray(detail) ? (detail[0]?.msg || "リクエストが不正です")
+          : "ABテスト生成に失敗しました";
+        throw new Error(msg);
       }
 
       const data = await response.json();
@@ -261,6 +270,21 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
       });
       throw error;
     }
+  },
+
+  adoptAbPattern: (pattern) => {
+    set((state) => {
+      if (!state.abResults) return state;
+      const picked = pattern === "a" ? state.abResults.pattern_a : state.abResults.pattern_b;
+      return {
+        abResults: null,
+        generatedContent: picked.content,
+        contentId: picked.content_id,
+        charCount: picked.char_count,
+        maxChars: picked.max_chars,
+        isOverLimit: picked.is_over_limit,
+      };
+    });
   },
 
   setGeneratedContent: (content: string) => {

@@ -23,7 +23,7 @@ class GenerateRequest(BaseModel):
     star_rating: Optional[int] = Field(None, ge=1, le=5, description="口コミの星評価（google_review_replyの場合）")
     use_past_contents: bool = Field(False, description="過去コンテンツを参照するか（Pro/Team限定）")
     target_char_count: Optional[int] = Field(
-        None, ge=50, le=10000,
+        None, ge=1, le=10000,
         description="目標文字数。未指定時はコンテンツタイプのmax_charsを使用"
     )
 
@@ -34,7 +34,7 @@ class GenerateRequest(BaseModel):
         if self.target_char_count is None:
             self.target_char_count = cap
         elif self.target_char_count > cap:
-            raise ValueError(f"target_char_count {self.target_char_count} はコンテンツタイプの上限 {cap} を超えています")
+            self.target_char_count = cap
         return self
 
 
@@ -48,7 +48,7 @@ class BatchGenerateItem(BaseModel):
     consultation_text: Optional[str] = Field(None, max_length=2000)
     star_rating: Optional[int] = Field(None, ge=1, le=5)
     target_char_count: Optional[int] = Field(
-        None, ge=50, le=10000,
+        None, ge=1, le=10000,
         description="目標文字数。未指定時はコンテンツタイプのmax_charsを使用"
     )
 
@@ -59,7 +59,7 @@ class BatchGenerateItem(BaseModel):
         if self.target_char_count is None:
             self.target_char_count = cap
         elif self.target_char_count > cap:
-            raise ValueError(f"target_char_count {self.target_char_count} はコンテンツタイプの上限 {cap} を超えています")
+            self.target_char_count = cap
         return self
 
 

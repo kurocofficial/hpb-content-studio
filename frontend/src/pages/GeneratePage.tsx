@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSalonStore } from "@/stores/salonStore";
 import { useStylistStore } from "@/stores/stylistStore";
@@ -37,6 +37,7 @@ import {
   Star,
   Crown,
   BookOpen,
+  CheckCircle2,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { Switch } from "@/components/ui/switch";
@@ -66,6 +67,7 @@ export default function GeneratePage() {
     abResults,
     generateContent,
     generateAbTest,
+    adoptAbPattern,
     setGeneratedContent,
     reset,
   } = useGenerateStore();
@@ -88,10 +90,13 @@ export default function GeneratePage() {
 
   const initialConfig = CONTENT_TYPES.find((t) => t.type === initialType);
   const [targetCharCount, setTargetCharCount] = useState<number>(initialConfig?.maxChars ?? 500);
+  const [targetCharInput, setTargetCharInput] = useState<string>(String(initialConfig?.maxChars ?? 500));
 
   const selectedConfig = CONTENT_TYPES.find(
     (t) => t.type === selectedContentType
   );
+
+  const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchSalon();
@@ -100,8 +105,25 @@ export default function GeneratePage() {
   }, [fetchSalon, fetchStylists, reset]);
 
   useEffect(() => {
-    setTargetCharCount(selectedConfig?.maxChars ?? 500);
-  }, [selectedContentType, selectedConfig]);
+    const config = CONTENT_TYPES.find((t) => t.type === selectedContentType);
+    const maxChars = config?.maxChars ?? 500;
+    setTargetCharCount(maxChars);
+    setTargetCharInput(String(maxChars));
+  }, [selectedContentType]);
+
+  // AB結果が出たら結果エリアへ自動スクロール
+  useEffect(() => {
+    if (abResults) {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [abResults]);
+
+  // 単発生成完了時も結果エリアへ軽くスクロール
+  useEffect(() => {
+    if (generatedContent && !isGenerating && !abResults) {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [isGenerating, generatedContent, abResults]);
 
   const handleGenerate = async () => {
     if (!salon) {
@@ -412,20 +434,27 @@ export default function GeneratePage() {
               <CardHeader>
                 <CardTitle>目標文字数</CardTitle>
                 <CardDescription>
-                  ±4% の範囲（{Math.floor(targetCharCount * 0.96).toLocaleString()}〜{Math.ceil(targetCharCount * 1.04).toLocaleString()}文字）で生成します
+                  目安として指定文字数の80〜90%程度で生成します（編集余白を確保）
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3">
                   <Input
                     type="number"
-                    min={50}
+                    min={1}
                     max={selectedConfig?.maxChars}
-                    value={targetCharCount}
-                    onChange={(e) => {
-                      const n = Math.floor(Number(e.target.value));
-                      if (!Number.isNaN(n)) {
-                        setTargetCharCount(Math.max(50, Math.min(selectedConfig?.maxChars ?? 500, n)));
+                    value={targetCharInput}
+                    onChange={(e) => setTargetCharInput(e.target.value)}
+                    onBlur={() => {
+                      const maxChars = selectedConfig?.maxChars ?? 500;
+                      const n = Math.floor(Number(targetCharInput));
+                      if (!Number.isFinite(n) || n < 1) {
+                        setTargetCharCount(maxChars);
+                        setTargetCharInput(String(maxChars));
+                      } else {
+                        const clamped = Math.min(maxChars, n);
+                        setTargetCharCount(clamped);
+                        setTargetCharInput(String(clamped));
                       }
                     }}
                     className="w-32"
@@ -541,32 +570,43 @@ export default function GeneratePage() {
           </div>
 
           {/* Right: Result */}
-          <div className="lg:sticky lg:top-4 lg:self-start space-y-4">
+          <div ref={resultRef} className="lg:sticky lg:top-4 lg:self-start space-y-4">
             {abResults ? (
-              <>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-center text-sm font-medium text-primary">パターン A</div>
-                  <div className="text-center text-sm font-medium text-primary">パターン B</div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <ResultView
-                    content={abResults.pattern_a.content}
-                    maxChars={abResults.pattern_a.max_chars}
-                    charCountMode={selectedConfig?.charCountMode || "hpb"}
-                    contentId={abResults.pattern_a.content_id}
-                    isGenerating={false}
-                    onChatModify={() => navigate(`/chat/${abResults.pattern_a.content_id}`)}
-                  />
-                  <ResultView
-                    content={abResults.pattern_b.content}
-                    maxChars={abResults.pattern_b.max_chars}
-                    charCountMode={selectedConfig?.charCountMode || "hpb"}
-                    contentId={abResults.pattern_b.content_id}
-                    isGenerating={false}
-                    onChatModify={() => navigate(`/chat/${abResults.pattern_b.content_id}`)}
-                  />
-                </div>
-              </>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {(["a", "b"] as const).map((key) => {
+                  const pat = key === "a" ? abResults.pattern_a : abResults.pattern_b;
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="text-center text-sm font-semibold text-primary">
+                        パターン {key.toUpperCase()}
+                      </div>
+                      <ResultView
+                        content={pat.content}
+                        maxChars={pat.max_chars}
+                        charCountMode={selectedConfig?.charCountMode || "hpb"}
+                        contentId={pat.content_id}
+                        isGenerating={false}
+                        onChatModify={() => navigate(`/chat/${pat.content_id}`)}
+                      />
+                      <Button
+                        variant="default"
+                        className="w-full"
+                        onClick={() => {
+                          adoptAbPattern(key);
+                          toast({
+                            title: `パターン${key.toUpperCase()}を採用しました`,
+                            description: "編集・再生成ができるようになりました",
+                            variant: "success",
+                          });
+                        }}
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        このパターンを採用
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <ResultView
                 content={generatedContent}
