@@ -9,12 +9,25 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.services.stats_service import get_public_stats
+from app.services.usage_service import is_monitor_active
+from app.config import get_settings
 
 router = APIRouter()
 
 # インメモリTTLキャッシュ（5分）
 _cache: Optional[Tuple[float, Dict[str, Any]]] = None
 _CACHE_TTL = 300  # 5分
+
+
+@router.get("/monitor-status")
+def get_monitor_status():
+    """モニター期間の状態を取得（認証不要）"""
+    settings = get_settings()
+    active = is_monitor_active()
+    return {
+        "is_active": active,
+        "end_date": settings.monitor_end_date if active else None,
+    }
 
 
 @router.get("/stats")
