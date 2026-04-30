@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     stripe_pro_price_id: str = ""
 
     # モニター期間設定
-    monitor_mode: bool = False
+    monitor_mode: bool = True
     monitor_end_date: str = "2026-06-30"
 
     # 利用制限設定

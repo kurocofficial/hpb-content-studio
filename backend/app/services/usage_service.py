@@ -1,7 +1,6 @@
 """
 利用量管理サービス
 """
-import os
 from datetime import datetime
 from typing import Dict, Any
 from sqlalchemy.orm import Session
@@ -12,14 +11,11 @@ from app.models.usage import UsageTracking, Subscription
 
 def is_monitor_active() -> bool:
     """モニター期間が有効かを判定"""
-    monitor_mode = os.environ.get("MONITOR_MODE", "false").lower()
-    if monitor_mode not in ("true", "1", "yes"):
+    settings = get_settings()
+    if not settings.monitor_mode:
         return False
     try:
-        end_date = os.environ.get("MONITOR_END_DATE", "")
-        if not end_date:
-            end_date = get_settings().monitor_end_date
-        end = datetime.strptime(end_date, "%Y-%m-%d").date()
+        end = datetime.strptime(settings.monitor_end_date, "%Y-%m-%d").date()
         return datetime.now().date() <= end
     except ValueError:
         return False
