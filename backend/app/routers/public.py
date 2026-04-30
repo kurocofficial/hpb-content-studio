@@ -25,12 +25,14 @@ def get_monitor_status():
     import os
     settings = get_settings()
     active = is_monitor_active()
+    env_keys = [k for k in os.environ.keys() if "MONITOR" in k or "APP" in k or "DATABASE" in k]
     return {
         "is_active": active,
         "end_date": settings.monitor_end_date if active else None,
         "_debug_monitor_mode_raw": os.environ.get("MONITOR_MODE", "__NOT_SET__"),
         "_debug_monitor_end_date_raw": os.environ.get("MONITOR_END_DATE", "__NOT_SET__"),
         "_debug_settings_monitor_mode": settings.monitor_mode,
+        "_debug_relevant_env_keys": env_keys,
     }
 
 
