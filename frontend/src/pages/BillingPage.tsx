@@ -19,7 +19,7 @@ import {
 const CONTACT_EMAIL = "info@kuroco.team";
 
 export default function BillingPage() {
-  const { plan, subscription, fetchSubscription, monitorStatus } = useAuthStore();
+  const { plan, fetchSubscription, monitorStatus } = useAuthStore();
   const isMonitorActive = monitorStatus?.is_active ?? false;
 
   useEffect(() => {
