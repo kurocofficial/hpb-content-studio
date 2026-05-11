@@ -19,13 +19,12 @@ import {
 const CONTACT_EMAIL = "info@kuroco.team";
 
 export default function BillingPage() {
-  const { subscription, fetchSubscription } = useAuthStore();
+  const { plan, subscription, fetchSubscription, monitorStatus } = useAuthStore();
+  const isMonitorActive = monitorStatus?.is_active ?? false;
 
   useEffect(() => {
     fetchSubscription();
   }, [fetchSubscription]);
-
-  const plan = subscription?.plan || "free";
 
   return (
     <MainLayout>
@@ -60,10 +59,24 @@ export default function BillingPage() {
             </div>
             <CardDescription>
               {plan === "free" && "月5回まで無料でご利用いただけます"}
-              {plan === "pro" && "無制限のテキスト生成をご利用いただけます"}
+              {plan === "pro" && isMonitorActive && "モニター期間中 — Proプランの全機能を無料でご利用いただけます"}
+              {plan === "pro" && !isMonitorActive && "無制限のテキスト生成をご利用いただけます"}
               {plan === "team" && "Teamプラン — 複数人での運用が可能です"}
             </CardDescription>
           </CardHeader>
+          {plan === "pro" && isMonitorActive && (
+            <CardContent>
+              <div className="rounded-lg border border-teal-200 bg-teal-50 p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-teal-900">🎉 モニター期間中につきProプランを無料開放中</p>
+                  <p className="text-sm text-teal-700 mt-1">
+                    {monitorStatus?.end_date && `${monitorStatus.end_date.replace(/-/g, "/")}まで`}全機能をご利用いただけます。告知なく終了する場合があります。
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          )}
           {plan === "free" && (
             <CardContent>
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
@@ -132,7 +145,9 @@ export default function BillingPage() {
                 <h3 className="font-semibold mb-2 flex items-center space-x-1">
                   <Crown className="h-4 w-4 text-yellow-500" />
                   <span>Pro</span>
-                  <span className="ml-1 text-xs font-normal text-muted-foreground px-1.5 py-0.5 bg-amber-100 rounded">準備中</span>
+                  <span className="ml-1 text-xs font-normal text-muted-foreground px-1.5 py-0.5 bg-amber-100 rounded">
+                    {isMonitorActive ? "モニター期間中無料" : "準備中"}
+                  </span>
                 </h3>
                 <p className="text-2xl font-bold mb-1">¥980<span className="text-sm font-normal text-muted-foreground">/月</span></p>
                 <ul className="space-y-2 text-sm mt-3">

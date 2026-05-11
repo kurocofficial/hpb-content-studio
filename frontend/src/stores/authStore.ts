@@ -23,12 +23,18 @@ function resetAllStores() {
   useGenerateStore.getState().reset();
 }
 
+interface MonitorStatus {
+  is_active: boolean;
+  end_date: string | null;
+}
+
 interface AuthState {
   user: User | null;
   plan: PlanType;
   subscription: Subscription | null;
   organization: Organization | null;
   orgRole: OrgRole | null;
+  monitorStatus: MonitorStatus | null;
   isLoading: boolean;
   isInitialized: boolean;
   error: string | null;
@@ -40,6 +46,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   fetchPlanInfo: () => Promise<void>;
   fetchSubscription: () => Promise<void>;
+  fetchMonitorStatus: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -49,6 +56,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   subscription: null,
   organization: null,
   orgRole: null,
+  monitorStatus: null,
   isLoading: false,
   isInitialized: false,
   error: null,
@@ -56,6 +64,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialize: async () => {
     try {
       const session = await getSession();
+
+      // モニター状態はログイン不要で取得（ノンブロッキング）
+      get().fetchMonitorStatus();
 
       if (session?.user) {
         set({
@@ -192,12 +203,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   fetchSubscription: async () => {
     try {
       const sub = await api.get<Subscription>("/api/v1/billing/subscription");
-      set({
-        subscription: sub,
-        plan: sub.plan as PlanType,
-      });
+      // planはfetchPlanInfo（/api/v1/usage）が正とする。subscriptionオブジェクトのみ更新。
+      set({ subscription: sub });
     } catch {
       // サブスク情報取得失敗は無視
+    }
+  },
+
+  fetchMonitorStatus: async () => {
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+      const res = await fetch(`${backendUrl}/api/v1/public/monitor-status`);
+      if (res.ok) {
+        const data: MonitorStatus = await res.json();
+        set({ monitorStatus: data });
+      }
+    } catch {
+      // モニター状態取得失敗は無視
     }
   },
 
