@@ -160,13 +160,16 @@ async def get_subscription_info(
     Returns:
         サブスクリプション情報
     """
+    from app.services.usage_service import get_effective_plan
+    effective_plan = await get_effective_plan(db, user_id)
+
     subscription = db.query(Subscription).filter(
         Subscription.user_id == user_id
     ).first()
 
     if not subscription or subscription.plan == "free":
         return {
-            "plan": subscription.plan if subscription else "free",
+            "plan": effective_plan,
             "status": "active",
             "stripe_customer_id": subscription.stripe_customer_id if subscription else None,
             "current_period_start": None,
@@ -187,7 +190,7 @@ async def get_subscription_info(
             logger.warning(f"Stripeサブスク取得失敗: {e}")
 
     return {
-        "plan": subscription.plan,
+        "plan": effective_plan,
         "status": subscription.status,
         "stripe_customer_id": subscription.stripe_customer_id,
         "current_period_start": subscription.current_period_start.isoformat() if subscription.current_period_start else None,

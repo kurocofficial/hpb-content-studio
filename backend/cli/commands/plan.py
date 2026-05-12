@@ -5,7 +5,7 @@ import asyncio
 import click
 from app.db.session import SessionLocal
 from app.models.usage import Subscription
-from app.services.usage_service import get_user_plan
+from app.services.usage_service import get_effective_plan
 
 
 @click.group()
@@ -167,7 +167,7 @@ def info(user_email):
                 return
             user_id = target.id
 
-        current_plan = asyncio.run(get_user_plan(db, user_id))
+        current_plan = asyncio.run(get_effective_plan(db, user_id))
         click.echo(f"プラン情報:")
         click.echo(f"  ユーザー: {user_email} ({user_id})")
         click.echo(f"  プラン: {current_plan}")

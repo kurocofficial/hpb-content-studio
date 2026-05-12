@@ -16,7 +16,7 @@ from app.services.content_service import (
     get_stylist_by_id,
     get_past_contents,
 )
-from app.services.usage_service import check_usage_limit, increment_usage, get_user_plan
+from app.services.usage_service import check_usage_limit, increment_usage, get_effective_plan
 from app.services.prompt_engine import build_full_prompt
 from app.services.claude_service import generate_content, compute_max_tokens
 from app.utils.char_counter import get_char_limit, count_characters
@@ -74,7 +74,7 @@ async def generate_text(
         )
 
     # プラン情報を取得
-    plan = await get_user_plan(db, current_user["id"])
+    plan = await get_effective_plan(db, current_user["id"])
 
     async def event_stream():
         full_content = ""
@@ -190,7 +190,7 @@ async def generate_ab_test(
     ABテスト生成（2パターン生成、Pro/Team限定）
     """
     # プランチェック
-    plan = await get_user_plan(db, current_user["id"])
+    plan = await get_effective_plan(db, current_user["id"])
     if plan == "free":
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
@@ -302,7 +302,7 @@ async def generate_batch(
     一括生成（Pro/Team限定、SSEでプログレス通知）
     """
     # プランチェック
-    plan = await get_user_plan(db, current_user["id"])
+    plan = await get_effective_plan(db, current_user["id"])
     if plan == "free":
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,

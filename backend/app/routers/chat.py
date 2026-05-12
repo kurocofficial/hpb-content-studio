@@ -16,7 +16,7 @@ from app.models.salon import Salon
 from app.models.content import GeneratedContent
 from app.models.chat import ChatSession, ChatMessage
 from app.services.content_service import modify_content_with_chat
-from app.services.usage_service import get_user_plan
+from app.services.usage_service import get_effective_plan
 from app.config import get_settings
 from app.utils.char_counter import count_hpb_characters
 
@@ -117,10 +117,10 @@ async def get_chat_history(
     ).order_by(ChatMessage.created_at).all()
 
     # プランに応じた制限チェック
-    plan = await get_user_plan(db, current_user["id"])
+    plan = await get_effective_plan(db, current_user["id"])
     turn_count = session.turn_count or 0
 
-    if plan == "pro":
+    if plan in ("pro", "team"):
         can_continue = True
         turns_remaining = None
     else:
@@ -171,10 +171,10 @@ async def send_message(
         )
 
     # プランに応じた制限チェック
-    plan = await get_user_plan(db, current_user["id"])
+    plan = await get_effective_plan(db, current_user["id"])
     turn_count = session.turn_count or 0
 
-    if plan != "pro" and turn_count >= settings.free_chat_turns_per_session:
+    if plan not in ("pro", "team") and turn_count >= settings.free_chat_turns_per_session:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail=f"チャット回数上限（{settings.free_chat_turns_per_session}回）に達しました。Proプランにアップグレードすると無制限で利用できます。"

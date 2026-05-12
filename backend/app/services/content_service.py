@@ -110,9 +110,11 @@ async def generate_text_content_stream(
 
     # 目標文字数を確定
     max_chars = get_char_limit(content_type)
-    target = target_char_count or max_chars
-    max_tokens = compute_max_tokens(target)
-    min_c, max_c = get_target_range(target, tolerance=0.04)
+    user_target = target_char_count or max_chars
+    # AIは指定より多めに生成する傾向があるため、85%にスケールして80〜90%の出力を狙う
+    prompt_target = round(user_target * 0.85)
+    max_tokens = compute_max_tokens(prompt_target)
+    min_c, max_c = get_target_range(prompt_target, tolerance=0.04)
 
     # system/userに分割してプロンプトを構築（system parameterで文字数制約の遵守率向上）
     system_prompt, user_message = build_prompt_parts(
@@ -126,7 +128,7 @@ async def generate_text_content_stream(
         star_rating=star_rating,
         plan=plan,
         past_contents=past_contents,
-        target_char_count=target,
+        target_char_count=prompt_target,
     )
 
     # 開始通知
@@ -177,7 +179,7 @@ async def generate_text_content_stream(
             "content": full_text,
             "char_count": char_count,
             "max_chars": max_chars,
-            "target_char_count": target,
+            "target_char_count": user_target,
             "min_char_count": min_c,
             "max_char_count_range": max_c,
             "is_over_limit": char_count > max_chars,

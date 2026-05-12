@@ -13,7 +13,7 @@ from app.schemas.content import ContentResponse, ContentListResponse
 from app.models.salon import Salon
 from app.models.stylist import Stylist
 from app.models.content import GeneratedContent
-from app.services.usage_service import get_user_plan
+from app.services.usage_service import get_effective_plan
 
 router = APIRouter()
 
@@ -79,7 +79,7 @@ async def export_contents(
     コンテンツをCSVエクスポート（Pro/Team限定）
     """
     # プランチェック
-    plan = await get_user_plan(db, current_user["id"])
+    plan = await get_effective_plan(db, current_user["id"])
     if plan == "free":
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,

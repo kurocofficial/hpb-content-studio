@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from app.dependencies import get_db, get_current_user
 from app.models.salon import Salon
 from app.models.calendar import ContentCalendar
-from app.services.usage_service import get_user_plan
+from app.services.usage_service import get_effective_plan
 
 router = APIRouter()
 
@@ -39,7 +39,7 @@ def get_user_salon_id(db: Session, user_id: str) -> str:
 
 
 async def require_premium(db: Session, user_id: str):
-    plan = await get_user_plan(db, user_id)
+    plan = await get_effective_plan(db, user_id)
     if plan == "free":
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
