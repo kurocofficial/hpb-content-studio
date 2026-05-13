@@ -22,6 +22,7 @@ import BillingSuccessPage from "@/pages/BillingSuccessPage";
 import SettingsPage from "@/pages/SettingsPage";
 import BatchGeneratePage from "@/pages/BatchGeneratePage";
 import CalendarPage from "@/pages/CalendarPage";
+import WelcomePage from "@/pages/WelcomePage";
 
 // Loading component
 function LoadingScreen() {
@@ -94,6 +95,16 @@ function App() {
             <PublicRoute>
               <SignupPage />
             </PublicRoute>
+          }
+        />
+
+        {/* Welcome (onboarding) */}
+        <Route
+          path="/welcome"
+          element={
+            <ProtectedRoute>
+              <WelcomePage />
+            </ProtectedRoute>
           }
         />
 

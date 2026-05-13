@@ -30,10 +30,11 @@ const RULE_TAG_PRESETS = ["NGワード", "必須ワード", "トンマナ", "ブ
 export default function SalonSetupPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { salon, isLoading, fetchSalon, createSalon, updateSalon } =
+  const { salon, isLoading, hasFetched, fetchSalon, createSalon, updateSalon } =
     useSalonStore();
   const { plan } = useAuthStore();
   const isPremium = plan === "pro" || plan === "team";
+  const isOnboarding = sessionStorage.getItem("just_signed_up") === "true";
 
   const [formData, setFormData] = useState({
     name: "",
@@ -47,7 +48,8 @@ export default function SalonSetupPage() {
   const [newRuleTagCustom, setNewRuleTagCustom] = useState("");
   const [newRuleValue, setNewRuleValue] = useState("");
 
-  const isEditing = !!salon;
+  // hasFetchedが確定するまでisEditingを評価しない
+  const isEditing = hasFetched && !!salon;
 
   useEffect(() => {
     fetchSalon();
@@ -112,7 +114,8 @@ export default function SalonSetupPage() {
           variant: "success",
         });
       }
-      navigate("/dashboard");
+      // オンボーディング中は次のステップ（スタイリスト登録）へ
+      navigate(isOnboarding ? "/stylists" : "/dashboard");
     } catch (error: any) {
       toast({
         title: "エラー",

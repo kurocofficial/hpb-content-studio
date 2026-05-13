@@ -19,7 +19,8 @@ export default function StylistListPage() {
   const { toast } = useToast();
   const { stylists, isLoading, fetchStylists, deleteStylist } =
     useStylistStore();
-  const { salon, fetchSalon } = useSalonStore();
+  const { salon, fetchSalon, hasFetched, isLoading: salonLoading } = useSalonStore();
+  const isOnboarding = sessionStorage.getItem("just_signed_up") === "true";
 
   useEffect(() => {
     fetchSalon();
@@ -47,6 +48,17 @@ export default function StylistListPage() {
     }
   };
 
+  // サロン情報フェッチ中
+  if (!hasFetched || salonLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
+
   // サロン未登録の場合
   if (!salon) {
     return (
@@ -71,9 +83,37 @@ export default function StylistListPage() {
     );
   }
 
+  const handleFinishOnboarding = () => {
+    sessionStorage.removeItem("just_signed_up");
+    navigate("/dashboard");
+  };
+
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto">
+        {/* オンボーディング進捗バー */}
+        {isOnboarding && (
+          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-primary">初期設定ステップ 3/3</p>
+              <button
+                onClick={handleFinishOnboarding}
+                className="text-xs text-muted-foreground hover:underline"
+              >
+                スキップ → ダッシュボードへ
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-2 flex-1 bg-primary rounded-full" />
+              <div className="h-2 flex-1 bg-primary rounded-full" />
+              <div className="h-2 flex-1 bg-muted rounded-full" />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              スタイリストを1人以上登録すると、コンテンツ生成が使えるようになります
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>

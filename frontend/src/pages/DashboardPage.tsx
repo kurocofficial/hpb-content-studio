@@ -50,7 +50,7 @@ interface UsageSummary {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { salon, fetchSalon } = useSalonStore();
+  const { salon, fetchSalon, hasFetched, isLoading: salonLoading } = useSalonStore();
   const { plan } = useAuthStore();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
 
@@ -158,7 +158,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick setup cards */}
-        {!salon && (
+        {(!hasFetched || salonLoading) ? (
+          <div className="mb-8 h-20 rounded-lg bg-muted animate-pulse" />
+        ) : !salon && (
           <Card className="mb-8 border-primary/20 bg-primary/5">
             <CardContent className="py-4">
               <div className="flex items-center justify-between">

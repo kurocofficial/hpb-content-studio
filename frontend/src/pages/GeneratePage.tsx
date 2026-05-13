@@ -56,7 +56,7 @@ export default function GeneratePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { salon, fetchSalon } = useSalonStore();
+  const { salon, fetchSalon, hasFetched, isLoading: salonLoading } = useSalonStore();
   const { stylists, fetchStylists } = useStylistStore();
   const {
     isGenerating,
@@ -186,6 +186,17 @@ export default function GeneratePage() {
       navigate(`/chat/${contentId}`);
     }
   };
+
+  // サロン情報フェッチ中
+  if (!hasFetched || salonLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
 
   // サロン未登録の場合
   if (!salon) {

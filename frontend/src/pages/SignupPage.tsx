@@ -48,10 +48,11 @@ export default function SignupPage() {
       await signUp(email, password);
       toast({
         title: "アカウント作成成功",
-        description: "確認メールをご確認ください",
+        description: "HPB Content Studio へようこそ！",
         variant: "success",
       });
-      navigate("/dashboard");
+      sessionStorage.setItem("just_signed_up", "true");
+      navigate("/welcome");
     } catch {
       // Error is handled in the store
     }
