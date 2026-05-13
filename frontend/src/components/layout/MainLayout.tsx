@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import SalonSelector from "@/components/team/SalonSelector";
+import MonitorBanner from "@/components/layout/MonitorBanner";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -260,6 +261,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </div>
           <div className="w-10" /> {/* Spacer */}
         </header>
+
+        {/* モニターバナー */}
+        <MonitorBanner />
 
         {/* Page content */}
         <main className="p-6">{children}</main>

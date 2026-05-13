@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 <html lang="ja">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2L7JGDXK1T"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2L7JGDXK1T');
+</script>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -114,11 +123,72 @@
     .blob-3 { animation: blobFloat1 16s ease-in-out infinite reverse; }
 
     /* ═══════════════════════════════════════════════════════
+       ANNOUNCEMENT BAR
+    ═══════════════════════════════════════════════════════ */
+    .announcement-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 60;
+      background: linear-gradient(135deg, #B8484A 0%, #D4585A 40%, #E8845A 100%);
+      padding: 0.5rem 1rem;
+    }
+    .announcement-bar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.625rem;
+      flex-wrap: wrap;
+    }
+    .announcement-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.625rem;
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 9999px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .announcement-text {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.95);
+      white-space: nowrap;
+    }
+    .announcement-text strong {
+      font-weight: 700;
+      color: #fff;
+    }
+    .announcement-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 9999px;
+      padding: 0.1875rem 0.75rem;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .announcement-link:hover { background: rgba(255,255,255,0.32); }
+    @media (max-width: 480px) {
+      .announcement-text { font-size: 0.75rem; }
+      .announcement-link { display: none; }
+    }
+
+    /* ═══════════════════════════════════════════════════════
        NAVIGATION
     ═══════════════════════════════════════════════════════ */
     .navbar {
       position: fixed;
-      top: 0; left: 0; right: 0;
+      top: 38px; left: 0; right: 0;
       z-index: 50;
       transition: all 0.5s ease;
       padding: 1.25rem 0;
@@ -284,7 +354,7 @@
     .hero-content {
       position: relative;
       width: 100%;
-      padding-top: 7rem;
+      padding-top: calc(7rem + 38px);
       padding-bottom: 5rem;
     }
     .hero-grid {
@@ -1257,6 +1327,19 @@
 <body>
 
   <!-- ═══════════════════════════════════════════════════════
+       ANNOUNCEMENT BAR
+  ═══════════════════════════════════════════════════════ -->
+  <div class="announcement-bar">
+    <div class="announcement-bar-inner">
+      <span class="announcement-badge">🎉 期間限定</span>
+      <span class="announcement-text"><strong>Proプランを無料開放中！</strong>　6月30日まで全機能が無料で使えます</span>
+      <a href="https://hpb-content-studio.vercel.app/signup" target="_blank" rel="noopener noreferrer" class="announcement-link">
+        今すぐ試す →
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
        NAVIGATION
   ═══════════════════════════════════════════════════════ -->
   <nav class="navbar" id="navbar">
@@ -1335,7 +1418,7 @@
           </div>
 
           <p class="hero-anim hero-anim-d3 hero-note">
-            クレジットカード不要 ・ 月5回まで無料
+            クレジットカード不要 ・ <strong style="color:#D4585A;">6月30日までProプラン全機能が無料！</strong>
           </p>
         </div>
 
@@ -1387,9 +1470,9 @@
         <div class="sr stat-item">
           <span class="stat-emoji">📈</span>
           <div>
-            <span class="stat-number" data-target="weekly_signups">--</span><span class="stat-unit">件</span>
+            <span class="stat-number" data-target="total_signups">--</span><span class="stat-unit">件</span>
           </div>
-          <span class="stat-label">今週の新規登録</span>
+          <span class="stat-label">累計加入者数</span>
         </div>
         <div class="sr sr-d1 stat-item">
           <span class="stat-emoji">🤖</span>
@@ -1519,7 +1602,7 @@
             <div class="feature-info">
               <div class="feature-title-row">
                 <h3>ブログ記事</h3>
-                <span class="feature-badge" style="background:#F0FFFE;color:#4ECDC4">10,000文字</span>
+                <span class="feature-badge" style="background:#F0FFFE;color:#4ECDC4">1,000文字</span>
               </div>
               <p class="feature-desc">トレンド・季節・施術ノウハウ、読み応えのある記事を量産</p>
             </div>
@@ -1700,9 +1783,10 @@
               </span>
             </div>
             <div class="pricing-price">
-              <span class="serif pricing-amount">¥980</span>
+              <span class="serif pricing-amount" style="text-decoration:line-through;opacity:0.4;font-size:1.5rem;">¥980</span>
+              <span class="serif pricing-amount" style="color:#D4585A;margin-left:0.5rem;">¥0</span>
               <span class="pricing-period">/月</span>
-              <p class="pricing-trial">14日間の無料トライアル付き</p>
+              <p class="pricing-trial" style="background:linear-gradient(135deg,#D4585A,#E8845A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;">🎉 6月30日まで無料開放中！</p>
             </div>
             <ul class="pricing-features pricing-pro-features">
               <li><svg class="icon check-coral" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>テキスト・ブログ生成 無制限</li>
@@ -1718,7 +1802,7 @@
               <li><svg class="icon check-coral" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>HPB文字数カウンター</li>
               <li><svg class="icon check-coral" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>優先サポート</li>
             </ul>
-            <button class="btn-pricing-primary" style="opacity:0.6;cursor:default;" disabled>準備中（Coming Soon）</button>
+            <a href="https://hpb-content-studio.vercel.app/signup" target="_blank" rel="noopener noreferrer" class="btn-pricing-primary" style="display:block;text-align:center;">今すぐ無料で使う →</a>
           </div>
         </div>
 
@@ -2055,7 +2139,7 @@
           if (!statsSection) return;
 
           var targets = {
-            weekly_signups: formatStatNumber('weekly_signups', data.weekly_signups),
+            total_signups: formatStatNumber('total_signups', data.total_signups),
             total_tokens: formatStatNumber('total_tokens', data.total_tokens),
             registered_salons: formatStatNumber('registered_salons', data.registered_salons)
           };

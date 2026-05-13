@@ -275,6 +275,7 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [monitorStatus, setMonitorStatus] = useState<{ is_active: boolean; end_date: string | null } | null>(null);
   const containerRef = useScrollReveal();
 
   useEffect(() => {
@@ -282,6 +283,16 @@ export default function LandingPage() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+    fetch(`${backendUrl}/api/v1/public/monitor-status`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data) setMonitorStatus(data); })
+      .catch(() => {});
+  }, []);
+
+  const isMonitorActive = monitorStatus?.is_active ?? false;
 
   // Load editorial serif font
   useEffect(() => {
@@ -415,7 +426,9 @@ export default function LandingPage() {
     },
     {
       q: "途中でプラン変更できますか？",
-      a: "Proプランは現在準備中です。ご興味のある方はKUROCO株式会社（info@kuroco.team）までお問い合わせください。",
+      a: isMonitorActive
+        ? `現在モニター期間中につき、ご登録いただいたFreeアカウントでもProプランの全機能をお試しいただけます（〜${monitorStatus?.end_date?.replace(/-/g, "/") ?? "2026/06/30"} / 告知なく終了する場合あり）。`
+        : "Proプランは現在準備中です。ご興味のある方はKUROCO株式会社（info@kuroco.team）までお問い合わせください。",
     },
     {
       q: "Teamプランとは？",
@@ -752,7 +765,7 @@ export default function LandingPage() {
               </div>
 
               <p className="lp-hero-anim lp-hero-anim-d3 mt-5 text-xs text-[#B0A090]">
-                クレジットカード不要 ・ 月5回まで無料
+                {isMonitorActive ? "クレジットカード不要 ・ モニター期間中は全機能無料" : "クレジットカード不要 ・ 月5回まで無料"}
               </p>
             </div>
 
@@ -955,24 +968,35 @@ export default function LandingPage() {
           </div>
 
           <div className="relative">
-            {/* テストマーケティング期間中オーバーレイ */}
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[2px] rounded-2xl">
-              <div className="text-center px-6 py-8 max-w-lg">
-                <p className="lp-serif text-xl sm:text-2xl font-bold text-[#2C3E50] mb-3">
-                  Pro / Teamプランは現在準備中です
+            {/* モニター期間中バナー / 準備中オーバーレイ */}
+            {isMonitorActive ? (
+              <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#D4585A]/10 to-[#4ECDC4]/10 border border-[#D4585A]/20 px-6 py-4 text-center">
+                <p className="lp-serif text-lg font-bold text-[#2C3E50]">
+                  🎉 モニター期間中：Proプランの全機能を無料開放中
                 </p>
-                <p className="text-[15px] text-[#6B7B8D] leading-[1.8]">
-                  ご興味のある方は<br className="hidden sm:block" />
-                  <span className="font-semibold text-[#2C3E50]">KUROCO株式会社</span>までお気軽にお問い合わせください
+                <p className="text-sm text-[#6B7B8D] mt-1">
+                  {monitorStatus?.end_date ? `${monitorStatus.end_date.replace(/-/g, "/")}まで` : ""}登録するだけで全機能をお試しいただけます（告知なく終了する場合あり）
                 </p>
-                <a
-                  href="mailto:info@kuroco.team?subject=Proプランについてのお問い合わせ"
-                  className="inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-full bg-[#D4585A] hover:bg-[#B8484A] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(212,88,90,0.3)] hover:shadow-[0_6px_24px_rgba(212,88,90,0.4)] transition-all"
-                >
-                  info@kuroco.team
-                </a>
               </div>
-            </div>
+            ) : (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 backdrop-blur-[2px] rounded-2xl">
+                <div className="text-center px-6 py-8 max-w-lg">
+                  <p className="lp-serif text-xl sm:text-2xl font-bold text-[#2C3E50] mb-3">
+                    Pro / Teamプランは現在準備中です
+                  </p>
+                  <p className="text-[15px] text-[#6B7B8D] leading-[1.8]">
+                    ご興味のある方は<br className="hidden sm:block" />
+                    <span className="font-semibold text-[#2C3E50]">KUROCO株式会社</span>までお気軽にお問い合わせください
+                  </p>
+                  <a
+                    href="mailto:info@kuroco.team?subject=Proプランについてのお問い合わせ"
+                    className="inline-flex items-center gap-2 mt-5 px-6 py-2.5 rounded-full bg-[#D4585A] hover:bg-[#B8484A] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(212,88,90,0.3)] hover:shadow-[0_6px_24px_rgba(212,88,90,0.4)] transition-all"
+                  >
+                    info@kuroco.team
+                  </a>
+                </div>
+              </div>
+            )}
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Free Plan */}
@@ -1026,7 +1050,7 @@ export default function LandingPage() {
                   <span className="text-[#6B7B8D] ml-1">/月</span>
                 </div>
                 <p className="text-xs text-[#D4585A] font-medium mb-8">
-                  14日間の無料トライアル付き
+                  {isMonitorActive ? "モニター期間中：全機能無料" : "14日間の無料トライアル付き"}
                 </p>
                 <ul className="space-y-3.5 mb-8 flex-1">
                   {[
@@ -1049,12 +1073,21 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <button
-                  disabled
-                  className="w-full rounded-full h-11 bg-[#D4585A]/50 text-white text-sm font-semibold cursor-not-allowed select-none"
-                >
-                  準備中（Coming Soon）
-                </button>
+                {isMonitorActive ? (
+                  <Button
+                    asChild
+                    className="w-full rounded-full h-11 bg-gradient-to-r from-[#D4585A] to-[#FF6B6B] hover:from-[#B8484A] hover:to-[#E05555] text-white text-sm font-semibold shadow-[0_4px_16px_rgba(212,88,90,0.3)] transition-all"
+                  >
+                    <Link to="/signup">無料で始める</Link>
+                  </Button>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full rounded-full h-11 bg-[#D4585A]/50 text-white text-sm font-semibold cursor-not-allowed select-none"
+                  >
+                    準備中（Coming Soon）
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1178,7 +1211,7 @@ export default function LandingPage() {
             </Button>
           </div>
           <p className="sr sr-d3 mt-5 text-white/40 text-sm">
-            クレジットカード不要 ・ 月5回まで無料
+            {isMonitorActive ? "クレジットカード不要 ・ モニター期間中は全機能無料" : "クレジットカード不要 ・ 月5回まで無料"}
           </p>
         </div>
       </section>
