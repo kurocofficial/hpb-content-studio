@@ -1,13 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuthStore } from "@/stores/authStore";
 import { Mail } from "lucide-react";
 
 const JUST_SIGNED_UP_KEY = "just_signed_up";
 
 export default function WelcomePage() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
 
   useEffect(() => {
     if (!sessionStorage.getItem(JUST_SIGNED_UP_KEY)) {
