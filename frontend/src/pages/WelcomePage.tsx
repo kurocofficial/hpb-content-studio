@@ -1,7 +1,6 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
-import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
 
 const JUST_SIGNED_UP_KEY = "just_signed_up";
@@ -15,11 +14,6 @@ export default function WelcomePage() {
       navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
-
-  const handleToDashboard = () => {
-    sessionStorage.removeItem(JUST_SIGNED_UP_KEY);
-    navigate("/dashboard");
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-hpb-light to-white flex items-center justify-center p-4">
@@ -45,16 +39,18 @@ export default function WelcomePage() {
         <div className="bg-white rounded-xl border shadow-sm p-6 mb-6 text-left">
           <p className="text-sm text-muted-foreground leading-relaxed">
             メール内の認証リンクをクリックすると、アカウントが有効化されます。
+            認証が完了したら、ログインページからサービスをご利用ください。
             メールが届かない場合は迷惑メールフォルダをご確認ください。
           </p>
         </div>
 
-        <Button className="w-full" onClick={handleToDashboard}>
-          ダッシュボードへ進む
-        </Button>
-        <p className="text-xs text-muted-foreground mt-3">
-          認証前でもサービスをご利用いただけます
-        </p>
+        <Link
+          to="/login"
+          className="text-sm text-primary hover:underline"
+          onClick={() => sessionStorage.removeItem(JUST_SIGNED_UP_KEY)}
+        >
+          ログインページへ
+        </Link>
       </div>
     </div>
   );
