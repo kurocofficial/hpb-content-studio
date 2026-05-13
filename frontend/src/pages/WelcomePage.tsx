@@ -29,11 +29,8 @@ export default function WelcomePage() {
         <h1 className="text-2xl font-bold text-foreground mb-2">
           アカウントを作成しました
         </h1>
-        <p className="text-muted-foreground text-sm mb-1">
+        <p className="text-muted-foreground text-sm mb-6">
           認証メールを送信しました
-        </p>
-        <p className="text-sm font-medium text-foreground mb-6">
-          {user?.email}
         </p>
 
         <div className="bg-white rounded-xl border shadow-sm p-6 mb-6 text-left">
