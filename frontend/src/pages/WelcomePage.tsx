@@ -18,7 +18,7 @@ export default function WelcomePage() {
   }, [navigate]);
 
   const handleStart = () => {
-    sessionStorage.removeItem(JUST_SIGNED_UP_KEY);
+    // フラグは残したまま遷移 → SalonSetupPage / StylistListPage でも進捗バーを表示
     navigate("/salon/setup");
   };
 
