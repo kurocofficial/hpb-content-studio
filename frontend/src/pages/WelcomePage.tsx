@@ -9,7 +9,7 @@ export default function WelcomePage() {
 
   useEffect(() => {
     if (!sessionStorage.getItem(JUST_SIGNED_UP_KEY)) {
-      navigate("/dashboard", { replace: true });
+      navigate("/login", { replace: true });
     }
   }, [navigate]);
 

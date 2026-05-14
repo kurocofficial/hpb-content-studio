@@ -122,10 +122,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: false });
       }
     } catch (error: any) {
+      const msg: string = error.message || "";
       const message =
-        error.message === "Invalid login credentials"
+        msg === "Invalid login credentials"
           ? "メールアドレスまたはパスワードが正しくありません"
-          : error.message || "ログインに失敗しました";
+          : msg.toLowerCase().includes("email not confirmed")
+          ? "メールアドレスの確認が完了していません。届いたメールの認証リンクをクリックしてください。"
+          : msg || "ログインに失敗しました";
       set({ error: message, isLoading: false });
       throw error;
     }

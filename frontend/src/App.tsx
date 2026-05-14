@@ -98,15 +98,8 @@ function App() {
           }
         />
 
-        {/* Welcome (onboarding) */}
-        <Route
-          path="/welcome"
-          element={
-            <ProtectedRoute>
-              <WelcomePage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Welcome (onboarding) — 認証不要。WelcomePage内のjust_signed_upフラグで制御 */}
+        <Route path="/welcome" element={<WelcomePage />} />
 
         {/* Protected routes */}
         <Route
