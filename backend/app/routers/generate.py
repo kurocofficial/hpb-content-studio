@@ -118,7 +118,7 @@ async def generate_text(
                 elif event_type == "complete":
                     input_tokens = event.get("input_tokens", 0)
                     output_tokens = event.get("output_tokens", 0)
-                    # リトライ後のコンテンツで確定
+                    # リトライ後のコンテンツで確定（ハッシュタグ付与済みの最終テキスト）
                     final_content = event.get("content", full_content)
 
                     # 利用量をインクリメント（トークン数込み）
@@ -162,7 +162,20 @@ async def generate_text(
                         output_tokens=output_tokens,
                     )
 
-                    yield f"data: {json.dumps({'type': 'complete', 'content_id': saved['id'], 'char_count': event['char_count'], 'max_chars': event['max_chars'], 'target_char_count': event.get('target_char_count'), 'is_over_limit': event['is_over_limit'], 'is_in_target_range': event.get('is_in_target_range', True), 'retried': event.get('retried', False)})}\n\n"
+                    complete_payload: dict = {
+                        'type': 'complete',
+                        'content_id': saved['id'],
+                        'char_count': event['char_count'],
+                        'max_chars': event['max_chars'],
+                        'target_char_count': event.get('target_char_count'),
+                        'is_over_limit': event['is_over_limit'],
+                        'is_in_target_range': event.get('is_in_target_range', True),
+                        'retried': event.get('retried', False),
+                    }
+                    # ハッシュタグ付与等でストリーム済みテキストと最終テキストが異なる場合はcontentを送信
+                    if final_content != full_content:
+                        complete_payload['content'] = final_content
+                    yield f"data: {json.dumps(complete_payload)}\n\n"
 
             yield "data: [DONE]\n\n"
 

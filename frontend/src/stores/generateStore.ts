@@ -180,13 +180,18 @@ export const useGenerateStore = create<GenerateState>((set, get) => ({
               }
 
               if (parsed.type === "complete") {
-                set({
+                const updates: Partial<GenerateState> = {
                   contentId: parsed.content_id,
                   charCount: parsed.char_count,
                   maxChars: parsed.max_chars,
                   isOverLimit: parsed.is_over_limit,
                   isInTargetRange: parsed.is_in_target_range ?? true,
-                });
+                };
+                // ハッシュタグ付与等でストリーム済みと最終テキストが異なる場合は上書き
+                if (parsed.content) {
+                  updates.generatedContent = parsed.content;
+                }
+                set(updates);
               }
             } catch (e) {
               // JSON以外のデータは無視
