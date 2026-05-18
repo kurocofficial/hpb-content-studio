@@ -184,6 +184,9 @@ async def generate_text_content_stream(
             retry_text, retry_usage = await generate_content(
                 retry_user, max_tokens=max_tokens, temperature=0.1, system=retry_system
             )
+            # AIがリトライプロンプトの "## テキスト" ヘッダーを出力に含めた場合は除去
+            if retry_text.startswith("## テキスト\n"):
+                retry_text = retry_text[len("## テキスト\n"):]
             full_text = retry_text
             char_count = count_characters(full_text, content_type)
             usage_info["input_tokens"] = usage_info.get("input_tokens", 0) + retry_usage.get("input_tokens", 0)
