@@ -49,7 +49,7 @@ interface GenerateState {
     usePastContents?: boolean,
     targetCharCount?: number
   ) => Promise<void>;
-  adoptAbPattern: (pattern: "a" | "b") => void;
+  adoptAbPattern: (pattern: "a" | "b") => Promise<void>;
   setGeneratedContent: (content: string) => void;
   reset: () => void;
 }
@@ -80,7 +80,7 @@ function buildRequestBody(
   };
 }
 
-export const useGenerateStore = create<GenerateState>((set, _get) => ({
+export const useGenerateStore = create<GenerateState>((set, get) => ({
   isGenerating: false,
   isRetrying: false,
   generatedContent: "",
@@ -272,18 +272,29 @@ export const useGenerateStore = create<GenerateState>((set, _get) => ({
     }
   },
 
-  adoptAbPattern: (pattern) => {
-    set((state) => {
-      if (!state.abResults) return state;
-      const picked = pattern === "a" ? state.abResults.pattern_a : state.abResults.pattern_b;
-      return {
-        abResults: null,
-        generatedContent: picked.content,
-        contentId: picked.content_id,
-        charCount: picked.char_count,
-        maxChars: picked.max_chars,
-        isOverLimit: picked.is_over_limit,
-      };
+  adoptAbPattern: async (pattern) => {
+    const state = get();
+    if (!state.abResults) return;
+
+    const picked = pattern === "a" ? state.abResults.pattern_a : state.abResults.pattern_b;
+    const rejected = pattern === "a" ? state.abResults.pattern_b : state.abResults.pattern_a;
+
+    // 不採用パターンをバックグラウンドで削除（エラーは無視）
+    if (rejected?.content_id) {
+      const session = await getSession();
+      fetch(`${API_URL}/api/v1/contents/${rejected.content_id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      }).catch(() => {});
+    }
+
+    set({
+      abResults: null,
+      generatedContent: picked.content,
+      contentId: picked.content_id,
+      charCount: picked.char_count,
+      maxChars: picked.max_chars,
+      isOverLimit: picked.is_over_limit,
     });
   },
 

@@ -25,6 +25,7 @@ export interface Salon {
   target_customer: string | null;
   strength: string | null;
   rules: SalonRule[] | null;
+  hashtags: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +37,7 @@ export interface SalonCreateInput {
   target_customer?: string;
   strength?: string;
   rules?: SalonRule[];
+  hashtags?: string[];
 }
 
 // スタイリスト関連

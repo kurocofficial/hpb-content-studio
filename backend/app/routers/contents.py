@@ -4,11 +4,12 @@
 import csv
 import io
 import math
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db, get_current_user
+from app.dependencies import get_db, get_current_user, require_premium
 from app.schemas.content import ContentResponse, ContentListResponse
 from app.models.salon import Salon
 from app.models.stylist import Stylist
@@ -72,26 +73,25 @@ async def list_contents(
 @router.get("/export")
 async def export_contents(
     content_type: str = Query(None),
+    start_date: date = Query(None, description="開始日（YYYY-MM-DD）"),
+    end_date: date = Query(None, description="終了日（YYYY-MM-DD）"),
     current_user: dict = Depends(get_current_user),
+    plan: str = Depends(require_premium),
     db: Session = Depends(get_db)
 ):
     """
     コンテンツをCSVエクスポート（Pro/Team限定）
     """
-    # プランチェック
-    plan = await get_effective_plan(db, current_user["id"])
-    if plan == "free":
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="CSVエクスポートはProプラン以上で利用できます"
-        )
-
     salon_id = get_user_salon_id(db, current_user["id"])
 
     # クエリを構築
     query = db.query(GeneratedContent).filter(GeneratedContent.salon_id == salon_id)
     if content_type:
         query = query.filter(GeneratedContent.content_type == content_type)
+    if start_date:
+        query = query.filter(GeneratedContent.created_at >= datetime.combine(start_date, datetime.min.time()))
+    if end_date:
+        query = query.filter(GeneratedContent.created_at < datetime.combine(end_date, datetime.max.time()))
 
     contents = query.order_by(GeneratedContent.created_at.desc()).all()
 

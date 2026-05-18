@@ -47,6 +47,7 @@ export default function SalonSetupPage() {
   const [newRuleTag, setNewRuleTag] = useState<string>("NGワード");
   const [newRuleTagCustom, setNewRuleTagCustom] = useState("");
   const [newRuleValue, setNewRuleValue] = useState("");
+  const [hashtagInput, setHashtagInput] = useState("");
 
   // hasFetchedが確定するまでisEditingを評価しない
   const isEditing = hasFetched && !!salon;
@@ -65,6 +66,7 @@ export default function SalonSetupPage() {
         strength: salon.strength || "",
       });
       setRules(salon.rules || []);
+      setHashtagInput((salon.hashtags || []).join("\n"));
     }
   }, [salon]);
 
@@ -93,9 +95,15 @@ export default function SalonSetupPage() {
       return;
     }
 
+    const parsedHashtags = hashtagInput
+      .split("\n")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+
     const payload = {
       ...formData,
       rules: isPremium && rules.length > 0 ? rules : undefined,
+      hashtags: isPremium && parsedHashtags.length > 0 ? parsedHashtags : undefined,
     };
 
     try {
@@ -333,6 +341,42 @@ export default function SalonSetupPage() {
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ブログハッシュタグ（Pro/Team限定） */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Label className="flex items-center gap-1.5">
+                    # ブログハッシュタグ
+                    {!isPremium ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                        <Crown className="h-3 w-3" /> Pro
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground font-normal">任意</span>
+                    )}
+                  </Label>
+                </div>
+
+                {!isPremium ? (
+                  <div className="rounded-lg border border-dashed border-amber-200 bg-amber-50/40 p-4 flex items-center gap-3 text-sm text-amber-800">
+                    <Lock className="h-4 w-4 shrink-0" />
+                    <span>ブログ記事の末尾に自動付与するハッシュタグを設定できます。文字数も上限に含まれます。Proプラン限定機能です。</span>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      1行に1つずつ入力してください。全ブログ記事の末尾に自動で付与されます（文字数も上限に含まれます）
+                    </p>
+                    <Textarea
+                      placeholder={"#Reala藤沢\n#縮毛矯正\n#髪質改善"}
+                      value={hashtagInput}
+                      onChange={(e) => setHashtagInput(e.target.value)}
+                      rows={4}
+                      className="font-mono text-sm"
+                    />
                   </div>
                 )}
               </div>

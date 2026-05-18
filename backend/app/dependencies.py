@@ -166,6 +166,23 @@ async def require_org_admin(
     return role
 
 
+async def require_premium(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> str:
+    """
+    Pro/Teamプラン必須。Freeは402。プラン名を返す。
+    """
+    from app.services.usage_service import get_effective_plan
+    plan = await get_effective_plan(db, current_user["id"])
+    if plan == "free":
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="この機能はProプラン以上で利用できます",
+        )
+    return plan
+
+
 async def get_current_user_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(
         HTTPBearer(auto_error=False)

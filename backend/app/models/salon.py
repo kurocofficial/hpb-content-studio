@@ -22,6 +22,7 @@ class Salon(Base, TimestampMixin):
     target_customer = Column(String(200), nullable=True)
     strength = Column(Text, nullable=True)
     rules = Column(JSON, nullable=True)  # Pro/Team限定: 生成ルール（[{"tag": "NGワード", "value": "..."}]）
+    hashtags = Column(JSON, nullable=True)  # Pro/Team限定: ブログ記事末尾に自動付与するハッシュタグ（["#Reala藤沢", "#縮毛矯正"]）
 
     # リレーション
     stylists = relationship("Stylist", back_populates="salon", cascade="all, delete-orphan")
@@ -40,6 +41,7 @@ class Salon(Base, TimestampMixin):
             "target_customer": self.target_customer,
             "strength": self.strength,
             "rules": self.rules,
+            "hashtags": self.hashtags,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

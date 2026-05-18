@@ -10,6 +10,7 @@ from app.models.content import GeneratedContent
 from app.services.prompt_engine import build_full_prompt, build_prompt_parts, get_prompt_for_chat_modification
 from app.services.claude_service import generate_content_stream, generate_content, compute_max_tokens
 from app.utils.char_counter import count_hpb_characters, count_characters, get_char_limit, get_target_range
+from fastapi import HTTPException
 
 # 過去コンテンツ参照数（コンテンツタイプ別）
 PAST_CONTENT_LIMITS = {
@@ -111,6 +112,22 @@ async def generate_text_content_stream(
     # 目標文字数を確定
     max_chars = get_char_limit(content_type)
     user_target = target_char_count or max_chars
+
+    # ブログ記事 + Pro/Team + hashtags設定あり → 末尾にハッシュタグを付与する
+    hashtag_appendix = ""
+    if content_type == "blog_article" and plan in ("pro", "team") and salon.get("hashtags"):
+        active_tags = [t for t in salon["hashtags"] if t and t.strip()]
+        if active_tags:
+            hashtag_appendix = "\n\n" + " ".join(active_tags)
+            appendix_chars = count_hpb_characters(hashtag_appendix)
+            body_target = user_target - appendix_chars
+            if body_target < 50:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"ハッシュタグが多すぎて本文を生成できません（ハッシュタグ: {appendix_chars}文字 / 目標: {user_target}文字）"
+                )
+            user_target = body_target
+
     # AIは指定より多めに生成する傾向があるため、85%にスケールして80〜90%の出力を狙う
     prompt_target = round(user_target * 0.85)
     max_tokens = compute_max_tokens(prompt_target)
@@ -172,18 +189,39 @@ async def generate_text_content_stream(
             usage_info["input_tokens"] = usage_info.get("input_tokens", 0) + retry_usage.get("input_tokens", 0)
             usage_info["output_tokens"] = usage_info.get("output_tokens", 0) + retry_usage.get("output_tokens", 0)
             retried = True
+
+            # リトライ後も帯域外の場合は末尾を切り詰めてフォールバック
+            char_count = count_characters(full_text, content_type)
+            if char_count > max_c:
+                # 超過分を末尾から削り、文末を「。」で閉じる
+                # HPBカウントではなく文字インデックスで近似truncate
+                full_text = full_text[:max_c]
+                # 最後の句点で終わらせる
+                last_period = max(full_text.rfind("。"), full_text.rfind("」"), full_text.rfind("！"), full_text.rfind("？"))
+                if last_period > len(full_text) * 0.7:
+                    full_text = full_text[:last_period + 1]
+                char_count = count_characters(full_text, content_type)
+
             yield {"type": "retry_replace", "content": full_text}
 
+        # ハッシュタグを末尾に付与（本文生成が完了してから連結）
+        if hashtag_appendix:
+            full_text = full_text.rstrip() + hashtag_appendix
+            char_count = count_characters(full_text, content_type)
+
+        original_user_target = target_char_count or get_char_limit(content_type)
+        # ハッシュタグ付与後は最終文字数でin-range判定（本文のmin_c/max_cではなく全体ターゲット基準）
+        final_min_c, final_max_c = get_target_range(original_user_target, tolerance=0.04) if hashtag_appendix else (min_c, max_c)
         yield {
             "type": "complete",
             "content": full_text,
             "char_count": char_count,
             "max_chars": max_chars,
-            "target_char_count": user_target,
-            "min_char_count": min_c,
-            "max_char_count_range": max_c,
+            "target_char_count": original_user_target,
+            "min_char_count": final_min_c,
+            "max_char_count_range": final_max_c,
             "is_over_limit": char_count > max_chars,
-            "is_in_target_range": min_c <= char_count <= max_c,
+            "is_in_target_range": final_min_c <= char_count <= final_max_c,
             "retried": retried,
             "input_tokens": usage_info.get("input_tokens", 0),
             "output_tokens": usage_info.get("output_tokens", 0),

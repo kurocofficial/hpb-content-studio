@@ -79,6 +79,8 @@ export default function HistoryPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filterType, setFilterType] = useState<string>("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   useEffect(() => {
     fetchContents();
@@ -114,8 +116,12 @@ export default function HistoryPage() {
   const handleExport = async () => {
     try {
       const session = await getSession();
-      const params = filterType !== "all" ? `?content_type=${filterType}` : "";
-      const response = await fetch(`${API_URL}/api/v1/contents/export${params}`, {
+      const params = new URLSearchParams();
+      if (filterType !== "all") params.append("content_type", filterType);
+      if (startDate) params.append("start_date", startDate);
+      if (endDate) params.append("end_date", endDate);
+      const queryString = params.toString() ? `?${params.toString()}` : "";
+      const response = await fetch(`${API_URL}/api/v1/contents/export${queryString}`, {
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
@@ -172,12 +178,29 @@ export default function HistoryPage() {
               過去に生成したコンテンツ一覧
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {isPremium && (
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-1" />
-                CSVエクスポート
-              </Button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="text-sm border rounded px-2 py-1 h-8"
+                  placeholder="開始日"
+                />
+                <span className="text-sm text-muted-foreground">〜</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="text-sm border rounded px-2 py-1 h-8"
+                  placeholder="終了日"
+                />
+                <Button variant="outline" size="sm" onClick={handleExport}>
+                  <Download className="h-4 w-4 mr-1" />
+                  CSVエクスポート
+                </Button>
+              </div>
             )}
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-48">

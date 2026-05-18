@@ -16,7 +16,6 @@ import {
   CreditCard,
   ExternalLink,
   Zap,
-  Calendar,
   Crown,
 } from "lucide-react";
 import { useState } from "react";
@@ -36,9 +35,10 @@ const navigation = [
   { name: "プラン・お問い合わせ", href: "/billing", icon: CreditCard },
 ];
 
+// TODO: カレンダー機能は一時的に非表示
 const proNavigation = [
   { name: "一括生成", href: "/batch-generate", icon: Zap },
-  { name: "カレンダー", href: "/calendar", icon: Calendar },
+  // { name: "カレンダー", href: "/calendar", icon: Calendar },  // 一時非表示（復活可能）※再表示時は Calendar を lucide-react から import すること
 ];
 
 const teamNavigation = [

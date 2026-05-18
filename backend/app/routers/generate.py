@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db, get_current_user
+from app.dependencies import get_db, get_current_user, require_premium
 from app.schemas.content import GenerateRequest, GenerateResponse, UsageLimitResponse, BatchGenerateRequest
 from app.services.content_service import (
     generate_text_content_stream,
@@ -184,19 +184,12 @@ async def generate_text(
 async def generate_ab_test(
     request: GenerateRequest,
     current_user: dict = Depends(get_current_user),
+    plan: str = Depends(require_premium),
     db: Session = Depends(get_db)
 ):
     """
     ABテスト生成（2パターン生成、Pro/Team限定）
     """
-    # プランチェック
-    plan = await get_effective_plan(db, current_user["id"])
-    if plan == "free":
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="ABテスト生成はProプラン以上で利用できます"
-        )
-
     # 利用制限チェック（2回分消費）
     limit_check = await check_usage_limit(
         db=db,
@@ -230,7 +223,14 @@ async def generate_ab_test(
     # 過去コンテンツ取得
     past = await get_past_contents(db, salon["id"], request.stylist_id, request.content_type) or None if request.use_past_contents else None
 
-    # プロンプトを構築
+    # 目標文字数を85%スケール（個別生成と同等の文字数制御）
+    from app.utils.char_counter import get_target_range
+    raw_target = request.target_char_count or get_char_limit(request.content_type)
+    prompt_target = round(raw_target * 0.85)
+    ab_max_tokens = compute_max_tokens(prompt_target)
+    min_c, max_c = get_target_range(prompt_target, tolerance=0.04)
+
+    # プロンプトを構築（スケール後の目標で）
     prompt = build_full_prompt(
         content_type=request.content_type,
         salon=salon,
@@ -242,15 +242,41 @@ async def generate_ab_test(
         star_rating=request.star_rating,
         plan=plan,
         past_contents=past,
-        target_char_count=request.target_char_count,
+        target_char_count=prompt_target,
     )
 
     # 2パターン同時生成（temperature違い）
-    ab_max_tokens = compute_max_tokens(request.target_char_count or get_char_limit(request.content_type))
     (result_a, usage_a), (result_b, usage_b) = await asyncio.gather(
         generate_content(prompt, max_tokens=ab_max_tokens, temperature=0.5),
         generate_content(prompt, max_tokens=ab_max_tokens, temperature=0.9),
     )
+
+    # 帯域チェック + リトライ（各パターン独立）
+    async def _ab_retry(result: str, usage: dict) -> tuple:
+        char_count = count_characters(result, request.content_type)
+        if char_count < min_c or char_count > max_c:
+            direction = "内容を充実させ" if char_count < min_c else "内容を簡潔にまとめ"
+            retry_system = (
+                f"テキスト調整の専門家です。"
+                f"与えられたテキストを{min_c}〜{max_c}文字に厳密に収めてください。"
+                f"修正後のテキストのみを出力してください。"
+            )
+            retry_user = (
+                f"以下のテキストは{char_count}文字です。{direction}、{min_c}〜{max_c}文字に調整してください。\n\n"
+                f"## テキスト\n{result}"
+            )
+            retried, retry_usage = await generate_content(
+                retry_user, max_tokens=ab_max_tokens, temperature=0.1, system=retry_system
+            )
+            merged_usage = {
+                "input_tokens": usage.get("input_tokens", 0) + retry_usage.get("input_tokens", 0),
+                "output_tokens": usage.get("output_tokens", 0) + retry_usage.get("output_tokens", 0),
+            }
+            return retried, merged_usage
+        return result, usage
+
+    result_a, usage_a = await _ab_retry(result_a, usage_a)
+    result_b, usage_b = await _ab_retry(result_b, usage_b)
 
     # 両方保存
     saved_a = await save_generated_content(
@@ -296,19 +322,12 @@ async def generate_ab_test(
 async def generate_batch(
     request: BatchGenerateRequest,
     current_user: dict = Depends(get_current_user),
+    plan: str = Depends(require_premium),
     db: Session = Depends(get_db)
 ):
     """
     一括生成（Pro/Team限定、SSEでプログレス通知）
     """
-    # プランチェック
-    plan = await get_effective_plan(db, current_user["id"])
-    if plan == "free":
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="一括生成はProプラン以上で利用できます"
-        )
-
     # サロン情報を取得
     salon = await get_salon_by_user_id(db, current_user["id"])
     if not salon:
@@ -336,6 +355,13 @@ async def generate_batch(
 
                     past = await get_past_contents(db, salon["id"], item.stylist_id, item.content_type) or None if request.use_past_contents else None
 
+                    # 85%スケール（個別生成と同等の文字数制御）
+                    from app.utils.char_counter import get_target_range
+                    raw_target = item.target_char_count or get_char_limit(item.content_type)
+                    prompt_target = round(raw_target * 0.85)
+                    batch_max_tokens = compute_max_tokens(prompt_target)
+                    b_min_c, b_max_c = get_target_range(prompt_target, tolerance=0.04)
+
                     prompt = build_full_prompt(
                         content_type=item.content_type,
                         salon=salon,
@@ -347,11 +373,30 @@ async def generate_batch(
                         star_rating=item.star_rating,
                         plan=plan,
                         past_contents=past,
-                        target_char_count=item.target_char_count,
+                        target_char_count=prompt_target,
                     )
 
-                    batch_max_tokens = compute_max_tokens(item.target_char_count or get_char_limit(item.content_type))
                     content, usage_info = await generate_content(prompt, max_tokens=batch_max_tokens)
+
+                    # 帯域チェック + 1回リトライ
+                    b_char = count_characters(content, item.content_type)
+                    if b_char < b_min_c or b_char > b_max_c:
+                        direction = "内容を充実させ" if b_char < b_min_c else "内容を簡潔にまとめ"
+                        retry_system = (
+                            f"テキスト調整の専門家です。"
+                            f"{b_min_c}〜{b_max_c}文字に厳密に収めてください。"
+                            f"修正後のテキストのみを出力してください。"
+                        )
+                        retry_user = (
+                            f"以下のテキストは{b_char}文字です。{direction}、{b_min_c}〜{b_max_c}文字に調整してください。\n\n"
+                            f"## テキスト\n{content}"
+                        )
+                        retry_content, retry_usage = await generate_content(
+                            retry_user, max_tokens=batch_max_tokens, temperature=0.1, system=retry_system
+                        )
+                        content = retry_content
+                        usage_info["input_tokens"] = usage_info.get("input_tokens", 0) + retry_usage.get("input_tokens", 0)
+                        usage_info["output_tokens"] = usage_info.get("output_tokens", 0) + retry_usage.get("output_tokens", 0)
 
                     saved = await save_generated_content(
                         db=db, salon_id=salon["id"], stylist_id=item.stylist_id,
@@ -387,11 +432,11 @@ async def generate_batch(
                         "content_type": item.content_type,
                     }
 
-        # 順次実行して進捗をストリーミング（Semaphoreで並列数制御）
-        for i, item in enumerate(request.items):
-            result = await process_item(item, i)
+        # 真の並列実行（as_completedで進捗をストリーミング）
+        tasks = [asyncio.create_task(process_item(item, i)) for i, item in enumerate(request.items)]
+        for coro in asyncio.as_completed(tasks):
+            result = await coro
             results.append(result)
-
             yield f"data: {json.dumps({'type': 'progress', 'completed': completed, 'total': total, 'result': result})}\n\n"
 
         yield f"data: {json.dumps({'type': 'complete', 'total': total, 'success_count': sum(1 for r in results if r['status'] == 'success'), 'error_count': sum(1 for r in results if r['status'] == 'error')})}\n\n"

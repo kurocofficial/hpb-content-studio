@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { Switch } from "@/components/ui/switch";
+import { countHpbCharacters } from "@/lib/utils";
 
 const contentTypeIcons: Record<ContentType, React.ElementType> = {
   salon_catch: Sparkles,
@@ -370,6 +371,9 @@ export default function GeneratePage() {
                     value={blogTheme}
                     onChange={(e) => setBlogTheme(e.target.value)}
                   />
+                  {!blogTheme.trim() && (
+                    <p className="text-xs text-destructive mt-1">テーマを入力してください（必須）</p>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -416,6 +420,9 @@ export default function GeneratePage() {
                     onChange={(e) => setReviewText(e.target.value)}
                     rows={5}
                   />
+                  {!reviewText.trim() && (
+                    <p className="text-xs text-destructive mt-1">口コミ原文を入力してください（必須）</p>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -447,6 +454,20 @@ export default function GeneratePage() {
                 <CardDescription>
                   目安として指定文字数の80〜90%程度で生成します（編集余白を確保）
                 </CardDescription>
+                {selectedContentType === "google_review_reply" && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ※ Google口コミ返信は半角1文字カウント（HPB基準とは異なります）
+                  </p>
+                )}
+                {selectedContentType === "blog_article" && isPremium && salon?.hashtags && salon.hashtags.length > 0 && (() => {
+                  const hashtagStr = "\n\n" + salon.hashtags.join(" ");
+                  const hashtagChars = countHpbCharacters(hashtagStr);
+                  return (
+                    <p className="text-xs text-blue-600 mt-1">
+                      ※ 店舗ハッシュタグ {hashtagChars} 文字（自動付与）を含みます。本文目標：{targetCharCount} - {hashtagChars} = {Math.max(0, targetCharCount - hashtagChars)} 文字
+                    </p>
+                  );
+                })()}
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3">
@@ -542,7 +563,10 @@ export default function GeneratePage() {
                 onClick={handleGenerate}
                 disabled={
                   isGenerating ||
-                  (selectedContentType === "consultation" && (!selectedStylistId || selectedStylistId === "none"))
+                  (selectedContentType === "consultation" && (!selectedStylistId || selectedStylistId === "none")) ||
+                  (selectedContentType === "blog_article" && !blogTheme.trim()) ||
+                  (selectedContentType === "review_reply" && !reviewText.trim()) ||
+                  (selectedContentType === "google_review_reply" && !reviewText.trim())
                 }
                 className="w-full h-12 text-lg"
               >
@@ -559,17 +583,25 @@ export default function GeneratePage() {
                 )}
               </Button>
               {isPremium && (
-                <Button
-                  variant="outline"
-                  onClick={handleAbTest}
-                  disabled={
-                    isGenerating ||
-                    (selectedContentType === "consultation" && (!selectedStylistId || selectedStylistId === "none"))
-                  }
-                  className="w-full"
-                >
-                  ABテスト生成（2パターン比較）
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleAbTest}
+                    disabled={
+                      isGenerating ||
+                      (selectedContentType === "consultation" && (!selectedStylistId || selectedStylistId === "none")) ||
+                      (selectedContentType === "blog_article" && !blogTheme.trim()) ||
+                      (selectedContentType === "review_reply" && !reviewText.trim()) ||
+                      (selectedContentType === "google_review_reply" && !reviewText.trim())
+                    }
+                    className="w-full"
+                  >
+                    ABテスト生成（2パターン比較）
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    ※ 利用回数を 2 回消費します
+                  </p>
+                </>
               )}
             </div>
 

@@ -14,6 +14,7 @@ class SalonCreate(BaseModel):
     target_customer: Optional[str] = Field(None, max_length=200, description="ターゲット層")
     strength: Optional[str] = Field(None, max_length=500, description="強み・特徴")
     rules: Optional[List[Dict[str, str]]] = Field(None, description="Pro/Team限定: 生成ルール（[{tag, value}]）")
+    hashtags: Optional[List[str]] = Field(None, description="Pro/Team限定: ブログ末尾に自動付与するハッシュタグ")
 
 
 class SalonUpdate(BaseModel):
@@ -24,6 +25,7 @@ class SalonUpdate(BaseModel):
     target_customer: Optional[str] = Field(None, max_length=200)
     strength: Optional[str] = Field(None, max_length=500)
     rules: Optional[List[Dict[str, str]]] = Field(None, description="Pro/Team限定: 生成ルール（[{tag, value}]）")
+    hashtags: Optional[List[str]] = Field(None, description="Pro/Team限定: ブログ末尾に自動付与するハッシュタグ")
 
 
 class SalonResponse(BaseModel):
@@ -37,6 +39,7 @@ class SalonResponse(BaseModel):
     target_customer: Optional[str] = None
     strength: Optional[str] = None
     rules: Optional[List[Dict[str, str]]] = None
+    hashtags: Optional[List[str]] = None
     created_at: datetime
     updated_at: datetime
 

@@ -44,6 +44,8 @@ async def create_salon(
             concept=request.concept,
             target_customer=request.target_customer,
             strength=request.strength,
+            rules=request.rules,
+            hashtags=request.hashtags,
         )
     else:
         # Free/Pro: 既存サロンチェック（組織なしのサロンのみ）
@@ -65,6 +67,8 @@ async def create_salon(
             concept=request.concept,
             target_customer=request.target_customer,
             strength=request.strength,
+            rules=request.rules,
+            hashtags=request.hashtags,
         )
 
     db.add(salon)
@@ -132,6 +136,12 @@ async def update_my_salon(
     if request.strength is not None:
         salon.strength = request.strength
         update_data["strength"] = request.strength
+    if request.rules is not None:
+        salon.rules = request.rules
+        update_data["rules"] = request.rules
+    if request.hashtags is not None:
+        salon.hashtags = request.hashtags
+        update_data["hashtags"] = request.hashtags
 
     if not update_data:
         raise HTTPException(
