@@ -17,10 +17,12 @@ ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAUL
 -- インデックス（未作成の場合のみ）
 CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id);
 
--- RLS（未設定の場合のみ）
+-- RLS有効化
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view own chat messages" ON chat_messages
+-- ポリシーは IF NOT EXISTS 非対応のため DROP → CREATE で冪等化
+DROP POLICY IF EXISTS "Users can view own chat messages" ON chat_messages;
+CREATE POLICY "Users can view own chat messages" ON chat_messages
     FOR SELECT USING (
         session_id IN (
             SELECT cs.id FROM chat_sessions cs
@@ -30,7 +32,8 @@ CREATE POLICY IF NOT EXISTS "Users can view own chat messages" ON chat_messages
         )
     );
 
-CREATE POLICY IF NOT EXISTS "Users can insert own chat messages" ON chat_messages
+DROP POLICY IF EXISTS "Users can insert own chat messages" ON chat_messages;
+CREATE POLICY "Users can insert own chat messages" ON chat_messages
     FOR INSERT WITH CHECK (
         session_id IN (
             SELECT cs.id FROM chat_sessions cs
