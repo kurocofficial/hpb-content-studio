@@ -81,25 +81,39 @@ export default function ChatPage() {
   }, [messages]);
 
   const initializeChat = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
-      // コンテンツ情報を取得
-      const content = await api.get<any>(`/api/v1/contents/${contentId}`);
+      // Step 1: コンテンツ情報を取得
+      let content: any;
+      try {
+        content = await api.get<any>(`/api/v1/contents/${contentId}`);
+      } catch (error: any) {
+        throw new Error(`コンテンツの取得に失敗しました: ${error.message}`);
+      }
       setCurrentContent(content.content);
       setContentType(content.content_type);
       setMaxChars(contentTypeMaxChars[content.content_type] || 500);
 
-      // セッションを作成または取得
-      const session = await api.post<any>("/api/v1/chat/sessions", {
-        content_id: contentId,
-      });
+      // Step 2: チャットセッションを作成または取得
+      let session: any;
+      try {
+        session = await api.post<any>("/api/v1/chat/sessions", {
+          content_id: contentId,
+        });
+      } catch (error: any) {
+        throw new Error(`チャットセッションの作成に失敗しました: ${error.message}`);
+      }
       setSessionId(session.id);
 
-      // 履歴を取得
-      const history = await api.get<ChatHistory>(
-        `/api/v1/chat/sessions/${session.id}`
-      );
+      // Step 3: 履歴を取得
+      let history: ChatHistory;
+      try {
+        history = await api.get<ChatHistory>(
+          `/api/v1/chat/sessions/${session.id}`
+        );
+      } catch (error: any) {
+        throw new Error(`チャット履歴の取得に失敗しました: ${error.message}`);
+      }
       setMessages(history.messages);
       setCurrentContent(history.current_content);
       setCanContinue(history.can_continue);

@@ -23,6 +23,8 @@ function resetAllStores() {
   useGenerateStore.getState().reset();
 }
 
+let authSubscription: { unsubscribe: () => void } | null = null;
+
 interface MonitorStatus {
   is_active: boolean;
   end_date: string | null;
@@ -62,6 +64,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
 
   initialize: async () => {
+    // 既存リスナーがあればアンサブスクライブ（多重登録防止）
+    if (authSubscription) {
+      authSubscription.unsubscribe();
+      authSubscription = null;
+    }
+
     try {
       const session = await getSession();
 
@@ -81,8 +89,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isInitialized: true });
 
       // 認証状態の変更をリッスン
-      supabase.auth.onAuthStateChange((event: string, session: { user: { id: string; email?: string; created_at?: string } } | null) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: { user: { id: string; email?: string; created_at?: string } } | null) => {
         if (event === "SIGNED_IN" && session?.user) {
+          // タブ復帰・トークンリフレッシュ等による再発火は同一ユーザーならスキップ
+          const currentUserId = get().user?.id;
+          if (currentUserId === session.user.id) {
+            return;
+          }
           resetAllStores();
           set({
             user: {
@@ -96,7 +109,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           resetAllStores();
           set({ user: null, plan: "free", subscription: null, organization: null, orgRole: null });
         }
+        // TOKEN_REFRESHED / USER_UPDATED / INITIAL_SESSION は無視
       });
+      authSubscription = subscription;
     } catch (error) {
       console.error("認証の初期化に失敗しました:", error);
       set({ isInitialized: true, error: "認証の初期化に失敗しました" });
