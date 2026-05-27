@@ -19,6 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/useToast";
 import MainLayout from "@/components/layout/MainLayout";
@@ -64,6 +66,8 @@ export default function BatchGeneratePage() {
 
   const [selectedStylistIds, setSelectedStylistIds] = useState<string[]>([]);
   const [selectedContentType, setSelectedContentType] = useState<ContentType>("stylist_profile");
+  const [blogTheme, setBlogTheme] = useState("");
+  const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState({ completed: 0, total: 0 });
   const [results, setResults] = useState<BatchResult[]>([]);
@@ -96,6 +100,12 @@ export default function BatchGeneratePage() {
       const items = selectedStylistIds.map((stylistId) => ({
         stylist_id: stylistId,
         content_type: selectedContentType,
+        ...(selectedContentType === "blog_article" && blogTheme.trim()
+          ? { blog_theme: blogTheme.trim() }
+          : {}),
+        ...(additionalInstructions.trim()
+          ? { additional_instructions: additionalInstructions.trim() }
+          : {}),
       }));
 
       const response = await fetch(`${API_URL}/api/v1/generate/batch`, {
@@ -220,6 +230,42 @@ export default function BatchGeneratePage() {
             </CardContent>
           </Card>
 
+          {/* Blog theme (blog_article のみ) */}
+          {selectedContentType === "blog_article" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>ブログテーマ</CardTitle>
+                <CardDescription>記事のテーマや書きたい内容を入力（全スタイリスト共通）</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  placeholder="例: 春のトレンドヘアスタイル、髪質改善について"
+                  value={blogTheme}
+                  onChange={(e) => setBlogTheme(e.target.value)}
+                />
+                {!blogTheme.trim() && (
+                  <p className="text-xs text-destructive mt-1">テーマを入力してください（必須）</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Additional instructions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>追加指示（任意）</CardTitle>
+              <CardDescription>特別なリクエストや含めたいキーワードなど（全スタイリスト共通）</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                placeholder="例: 20代向けのカジュアルな表現で、「透明感」というキーワードを入れてほしい"
+                value={additionalInstructions}
+                onChange={(e) => setAdditionalInstructions(e.target.value)}
+                rows={3}
+              />
+            </CardContent>
+          </Card>
+
           {/* Stylist selection */}
           <Card>
             <CardHeader>
@@ -288,7 +334,11 @@ export default function BatchGeneratePage() {
           {/* Generate button */}
           <Button
             onClick={handleBatchGenerate}
-            disabled={isGenerating || selectedStylistIds.length === 0}
+            disabled={
+              isGenerating ||
+              selectedStylistIds.length === 0 ||
+              (selectedContentType === "blog_article" && !blogTheme.trim())
+            }
             className="w-full h-12 text-lg"
           >
             {isGenerating ? (
