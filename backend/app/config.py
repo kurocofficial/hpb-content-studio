@@ -38,7 +38,7 @@ class Settings(BaseSettings):
 
     # モニター期間設定
     monitor_mode: bool = True
-    monitor_end_date: str = "2026-06-30"
+    monitor_end_date: str = "2026-07-31"
 
     # 利用制限設定
     free_monthly_generations: int = 5  # テキスト・ブログ合算
