@@ -427,7 +427,7 @@ export default function LandingPage() {
     {
       q: "途中でプラン変更できますか？",
       a: isMonitorActive
-        ? `現在モニター期間中につき、ご登録いただいたFreeアカウントでもProプランの全機能をお試しいただけます（〜${monitorStatus?.end_date?.replace(/-/g, "/") ?? "2026/06/30"} / 告知なく終了する場合あり）。`
+        ? `現在モニター期間中につき、ご登録いただいたFreeアカウントでもProプランの全機能をお試しいただけます（〜${monitorStatus?.end_date?.replace(/-/g, "/") ?? "2026/07/31"} / 告知なく終了する場合あり）。`
         : "Proプランは現在準備中です。ご興味のある方はKUROCO株式会社（info@kuroco.team）までお問い合わせください。",
     },
     {
